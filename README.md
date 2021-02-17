@@ -9,7 +9,7 @@ In the project directory, you can run:
 
 ### `yarn` or `yarn install`
 
-Install dependencies for this application. \
+Install dependencies for this application.
 
 
 ### `yarn start`
