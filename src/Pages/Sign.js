@@ -176,16 +176,16 @@ const RegistrationForm = () => {
       scrollToFirstError
     >
       <Form.Item
-        name="email"
-        label="E-mail"
+        name="id"
+        label="ID"
         rules={[
           {
-            type: 'email',
-            message: 'The input is not valid E-mail!',
+            type: 'id',
+            message: '사용할 수 없는 아이디입니다!',
           },
           {
             required: true,
-            message: 'Please input your E-mail!',
+            message: '아이디를 입력해주세요!',
           },
         ]}
       >
@@ -194,11 +194,11 @@ const RegistrationForm = () => {
 
       <Form.Item
         name="password"
-        label="Password"
+        label="비밀번호"
         rules={[
           {
             required: true,
-            message: 'Please input your password!',
+            message: '비밀번호를 입력해주세요!',
           },
         ]}
         hasFeedback
@@ -208,13 +208,13 @@ const RegistrationForm = () => {
 
       <Form.Item
         name="confirm"
-        label="Confirm Password"
+        label="비밀번호 확인"
         dependencies={['password']}
         hasFeedback
         rules={[
           {
             required: true,
-            message: 'Please confirm your password!',
+            message: '비밀번호를 다시 입력해주세요!',
           },
           ({ getFieldValue }) => ({
             validator(_, value) {
@@ -222,7 +222,7 @@ const RegistrationForm = () => {
                 return Promise.resolve();
               }
 
-              return Promise.reject('The two passwords that you entered do not match!');
+              return Promise.reject('비밀번호가 일치하지 않습니다!');
             },
           }),
         ]}
@@ -231,19 +231,12 @@ const RegistrationForm = () => {
       </Form.Item>
 
       <Form.Item
-        name="nickname"
-        label={
-          <span>
-            Nickname&nbsp;
-            <Tooltip title="What do you want others to call you?">
-              <QuestionCircleOutlined />
-            </Tooltip>
-          </span>
-        }
+        name="comp_nm"
+        label="법인명"
         rules={[
           {
             required: true,
-            message: 'Please input your nickname!',
+            message: '법인 이름을 입력하세요!',
             whitespace: true,
           },
         ]}
@@ -252,13 +245,33 @@ const RegistrationForm = () => {
       </Form.Item>
 
       <Form.Item
-        name="adress"
-        label="Company Address"
+        name="comp_reg"
+        label={
+          <span>
+            사업자등록번호&nbsp;
+            <Tooltip title="하이픈(-)을 제외한 숫자만 입력하세요.">
+              <QuestionCircleOutlined />
+            </Tooltip>
+          </span>
+        }
+        rules={[
+          {
+            required: true,
+            message: '사업자등록번호를 입력하세요!',
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+
+      <Form.Item
+        name="address"
+        label="주소"
         rules={[
           {
             type: 'array',
             required: true,
-            message: 'Please select your company address!',
+            message: '법인 주소를 입력하세요!',
           },
         ]}
       >
@@ -267,11 +280,24 @@ const RegistrationForm = () => {
 
       <Form.Item
         name="phone"
-        label="Phone Number"
+        label="대표자 이름"
         rules={[
           {
             required: true,
-            message: 'Please input your phone number!',
+            message: '대표자 성함을 입력해주세요!',
+          },
+        ]}
+      >
+        <Input/>
+      </Form.Item>
+
+      <Form.Item
+        name="phone"
+        label="대표 번호"
+        rules={[
+          {
+            required: true,
+            message: '전화번호를 입력하세요!',
           },
         ]}
       >
@@ -281,6 +307,30 @@ const RegistrationForm = () => {
             width: '100%',
           }}
         />
+      </Form.Item>
+
+      <Form.Item
+        name="email"
+        label="대표 이메일"
+        rules={[
+          {
+            type: 'email',
+            message: '유효한 이메일이 아닙니다!',
+          },
+          {
+            required: true,
+            message: '이메일을 입력해주세요!',
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+
+      <Form.Item
+        name="phone"
+        label="생년월일"
+      >
+        <Input/>
       </Form.Item>
 
       <Form.Item

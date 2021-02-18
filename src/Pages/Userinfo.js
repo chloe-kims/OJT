@@ -28,9 +28,9 @@ class SiderDemo extends React.Component {
     const { collapsed } = this.state;
     return (
       <Layout style={{ minHeight: '100vh' }}>
-        <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
+ <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
           <div className="logo" />
-          <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
+          <Menu theme="dark" defaultOpenKeys={['sub1']} defaultSelectedKeys={['4']} mode="inline">
             <Menu.Item key="1" icon={<TeamOutlined />}>
               <Link to="/main">홈</Link>
             </Menu.Item>
@@ -52,14 +52,7 @@ class SiderDemo extends React.Component {
         <Layout className="site-layout">
           <Header className="site-layout-background" style={{ padding: 0 }} />
           <Content style={{ margin: '0 16px' }}>
-            <Breadcrumb style={{ margin: '16px 0' }}>
-              <Breadcrumb.Item>Admin</Breadcrumb.Item>
-              <Breadcrumb.Item>User</Breadcrumb.Item>
-            </Breadcrumb>
-            <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
-              Last Login: [DATE]
-              <br/>[USER]님 어서오세요.
-            </div>
+            회원 정보 페이지
           </Content>
           <Footer style={{ textAlign: 'center' }}>TmaxData ©2021 Created by Chloe</Footer>
         </Layout>
@@ -68,11 +61,11 @@ class SiderDemo extends React.Component {
   }
 }
 
-function Main() {
+function Card() {
   return (
     <SiderDemo />
   );
 }
 
-export default Main;
+export default Card;
 
