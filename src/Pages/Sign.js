@@ -1,7 +1,9 @@
 import '../App.css';
 import logo from '../logo.svg';
 import React, { useState } from 'react';
+import DaumPostcode from "react-daum-postcode";
 import 'antd/dist/antd.css';
+
 import {
   Form,
   Input,
@@ -13,9 +15,12 @@ import {
   Checkbox,
   Button,
   AutoComplete,
+  Modal,
+  Space,
 } from 'antd';
-import { QuestionCircleOutlined } from '@ant-design/icons';
+import { QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
 const { Option } = Select;
+const { Search } = Input;
 const addresses = [
   {
     value: '국내',
@@ -79,6 +84,58 @@ const tailFormItemLayout = {
       offset: 8,
     },
   },
+};
+
+const Postcode = () => {
+  const handleComplete = (data) => {
+    let fullAddress = data.address;
+    let extraAddress = ''; 
+    
+    if (data.addressType === 'R') {
+      if (data.bname !== '') {
+        extraAddress += data.bname;
+      }
+      if (data.buildingName !== '') {
+        extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
+      }
+      fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+    }
+
+    console.log(fullAddress);  // e.g. '서울 성동구 왕십리로2길 20 (성수동1가)'
+  }
+
+  return (
+    <DaumPostcode
+      onComplete={handleComplete}
+    />
+  );
+}
+
+const ModalContainer = () => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  return (
+    <>
+      <Space direction="vertical" onClick={showModal} style={{ width: '100%' }}>
+        <Search placeholder="우편번호 검색" />
+      </Space>
+      <Modal visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+        <Postcode/>
+      </Modal>
+    </>
+  );
 };
 
 const RegistrationForm = () => {
@@ -205,7 +262,7 @@ const RegistrationForm = () => {
           },
         ]}
       >
-        <Cascader options={addresses} />
+        <ModalContainer/>
       </Form.Item>
 
       <Form.Item
