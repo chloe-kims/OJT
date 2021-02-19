@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb, Table, Button } from 'antd';
+import { Layout, Menu, Breadcrumb, } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -13,76 +13,6 @@ import {
 
 const { Header, Content, Footer, Sider } = Layout;
 const { SubMenu } = Menu;
-
-const columns = [
-  {
-    title: 'Name',
-    dataIndex: 'name',
-  },
-  {
-    title: 'Age',
-    dataIndex: 'age',
-  },
-  {
-    title: 'Address',
-    dataIndex: 'address',
-  },
-];
-
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    name: `Edward King ${i}`,
-    age: 32,
-    address: `London, Park Lane no. ${i}`,
-  });
-}
-
-class CardTable extends React.Component {
-  state = {
-    selectedRowKeys: [], // Check here to configure the default column
-    loading: false,
-  };
-
-  start = () => {
-    this.setState({ loading: true });
-    // ajax request after empty completing
-    setTimeout(() => {
-      this.setState({
-        selectedRowKeys: [],
-        loading: false,
-      });
-    }, 1000);
-  };
-
-  onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
-    this.setState({ selectedRowKeys });
-  };
-
-  render() {
-    const { loading, selectedRowKeys } = this.state;
-    const rowSelection = {
-      selectedRowKeys,
-      onChange: this.onSelectChange,
-    };
-    const hasSelected = selectedRowKeys.length > 0;
-    return (
-      <div>
-        <div style={{ marginBottom: 16 }}>
-          <Button type="primary" style={{ float: 'left' }} onClick={this.start} disabled={!hasSelected} loading={loading}>
-            Reload
-          </Button>
-          <span style={{ marginLeft: 8 }}>
-            {hasSelected ? `Selected ${selectedRowKeys.length} items` : ''}
-          </span>
-        </div>
-        <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
-      </div>
-    );
-  }
-}
 
 class SiderDemo extends React.Component {
   state = {
@@ -98,9 +28,9 @@ class SiderDemo extends React.Component {
     const { collapsed } = this.state;
     return (
       <Layout style={{ minHeight: '100vh' }}>
-         <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
+ <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
           <div className="logo" />
-          <Menu theme="dark" defaultSelectedKeys={['2']} mode="inline">
+          <Menu theme="dark" defaultOpenKeys={['sub1']} defaultSelectedKeys={['4']} mode="inline">
             <Menu.Item key="1" icon={<TeamOutlined />}>
               <Link to="/main">홈</Link>
             </Menu.Item>
@@ -122,7 +52,7 @@ class SiderDemo extends React.Component {
         <Layout className="site-layout">
           <Header className="site-layout-background" style={{ padding: 0 }} />
           <Content style={{ margin: '0 16px' }}>
-            <CardTable/>
+            비밀번호 변경 페이지
           </Content>
           <Footer style={{ textAlign: 'center' }}>TmaxData ©2021 Created by Chloe</Footer>
         </Layout>
@@ -131,11 +61,11 @@ class SiderDemo extends React.Component {
   }
 }
 
-function Card() {
+function UserInfoPw() {
   return (
     <SiderDemo />
   );
 }
 
-export default Card;
+export default UserInfoPw;
 
