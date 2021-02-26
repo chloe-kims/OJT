@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb, } from 'antd';
+import { Layout, Menu, Breadcrumb } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -11,7 +11,7 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
 
 class SiderDemo extends React.Component {
@@ -61,7 +61,6 @@ class SiderDemo extends React.Component {
               <br/>[USER]님 어서오세요.
             </div>
           </Content>
-          <Footer style={{ textAlign: 'center' }}>TmaxData ©2021 Created by Chloe</Footer>
         </Layout>
       </Layout>
     );

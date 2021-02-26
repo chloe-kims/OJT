@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb, Table, Button } from 'antd';
+import { Layout, Menu, Table, Button } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -11,21 +11,37 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
 
 const columns = [
   {
-    title: 'Name',
+    title: '카드명',
     dataIndex: 'name',
   },
   {
-    title: 'Age',
-    dataIndex: 'age',
+    title: '카드사',
+    dataIndex: 'company',
   },
   {
-    title: 'Address',
-    dataIndex: 'address',
+    title: '카드번호',
+    dataIndex: 'num',
+  },
+  {
+    title: '결제계좌번호',
+    dataIndex: 'account',
+  },
+  {
+    title: '결제계좌은행명',
+    dataIndex: 'account_comp',
+  },
+  {
+    title: '유효기간',
+    dataIndex: 'expired_date',
+  },
+  {
+    title: '상태',
+    dataIndex: 'status',
   },
 ];
 
@@ -33,9 +49,13 @@ const data = [];
 for (let i = 0; i < 46; i++) {
   data.push({
     key: i,
-    name: `Edward King ${i}`,
-    age: 32,
-    address: `London, Park Lane no. ${i}`,
+    name: `S20카드 ${i}`,
+    company: `BC`,
+    num: `1234-****-****-00${i}`,
+    account: `010123*****123`,
+    account_comp: `신한`,
+    expired_date: `30/01`,
+    status: `사용중`
   });
 }
 
@@ -71,8 +91,17 @@ class CardTable extends React.Component {
     return (
       <div>
         <div style={{ marginBottom: 16 }}>
-          <Button type="primary" style={{ float: 'left' }} onClick={this.start} disabled={!hasSelected} loading={loading}>
-            Reload
+          <Button type="primary" style={{ float: 'left', margin: '0 2px' }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+            검색
+          </Button>
+          <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+            추가
+          </Button>
+          <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+            수정
+          </Button>
+          <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+            삭제
           </Button>
           <span style={{ marginLeft: 8 }}>
             {hasSelected ? `Selected ${selectedRowKeys.length} items` : ''}
@@ -124,7 +153,6 @@ class SiderDemo extends React.Component {
           <Content style={{ margin: '0 16px' }}>
             <CardTable/>
           </Content>
-          <Footer style={{ textAlign: 'center' }}>TmaxData ©2021 Created by Chloe</Footer>
         </Layout>
       </Layout>
     );

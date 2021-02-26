@@ -1,10 +1,11 @@
 import React from 'react';
-import logo from '../logo.svg';
+import tmax from '../tmax.gif';
 import 'antd/dist/antd.css';
 import '../App.css';
 import { Form, Input, Button, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { Link } from 'react-router-dom';
+
 
 const NormalLoginForm = () => {
   const onFinish = (values) => {
@@ -25,7 +26,7 @@ const NormalLoginForm = () => {
         rules={[
           {
             required: true,
-            message: 'Please input your Username!',
+            message: '아이디를 입력하세요.',
           },
         ]}
       >
@@ -36,7 +37,7 @@ const NormalLoginForm = () => {
         rules={[
           {
             required: true,
-            message: 'Please input your Password!',
+            message: '비밀번호를 입력하세요.',
           },
         ]}
       >
@@ -57,7 +58,7 @@ const NormalLoginForm = () => {
       </Form.Item>
 
       <Form.Item>
-        <Button type="primary" htmlType="submit" className="login-form-button">
+        <Button style={{ margin: '10px' }} type="primary" htmlType="submit" className="login-form-button">
           <Link to='/main'>Log in</Link>
         </Button>
         <br/>
@@ -72,10 +73,12 @@ function Login({ location, history } ) {
   console.log(location);
     return (
       <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <NormalLoginForm/>
-      </header>
+        <header className="App-header">
+          <a href="http://localhost:3000">
+            <img src={tmax} className="App-logo" alt="logo" />
+          </a>
+          <NormalLoginForm/>
+        </header>
       </div>
     );
 }

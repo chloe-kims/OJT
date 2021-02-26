@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb, } from 'antd';
+import { Layout, Menu, Form, Input, Button } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -11,8 +11,61 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
+
+const FormLayoutDemo = () => {
+  const [form] = Form.useForm();
+  const [formLayout, setFormLayout] = useState('horizontal');
+
+  const onFormLayoutChange = ({ layout }) => {
+    setFormLayout(layout);
+  };
+
+  const formItemLayout =
+    formLayout === 'horizontal'
+      ? {
+          labelCol: {
+            span: 4,
+          },
+          wrapperCol: {
+            span: 14,
+          },
+        }
+      : null;
+  const buttonItemLayout =
+    formLayout === 'horizontal'
+      ? {
+          wrapperCol: {
+            span: 14,
+            offset: 4,
+          },
+        }
+      : null;
+  return (
+    <>
+      <Form style = {{width: '40vw', margin: 'auto'}}
+        {...formItemLayout}
+        layout={formLayout}
+        form={form}
+        initialValues={{
+          layout: formLayout,
+        }}
+        onValuesChange={onFormLayoutChange}
+      >
+        <Form.Item label="현재 비밀번호">
+          <Input />
+        </Form.Item>
+        <Form.Item label="새로운 비밀번호">
+          <Input />
+        </Form.Item>
+        <Form.Item {...buttonItemLayout}>
+          <Button type="primary">변경</Button>
+        </Form.Item>
+      </Form>
+    </>
+  );
+};
 
 class SiderDemo extends React.Component {
   state = {
@@ -51,10 +104,9 @@ class SiderDemo extends React.Component {
         </Sider>
         <Layout className="site-layout">
           <Header className="site-layout-background" style={{ padding: 0 }} />
-          <Content style={{ margin: '0 16px' }}>
-            비밀번호 변경 페이지
+          <Content style={{ margin: '150px' }}>
+            <FormLayoutDemo />
           </Content>
-          <Footer style={{ textAlign: 'center' }}>TmaxData ©2021 Created by Chloe</Footer>
         </Layout>
       </Layout>
     );

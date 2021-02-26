@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb, } from 'antd';
+import { Layout, Menu, Table, Button } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -11,8 +11,93 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
+
+const columns = [
+  {
+    title: '거래일자',
+    dataIndex: 'date',
+  },
+  {
+    title: '승인번호',
+    dataIndex: 'id',
+  },
+  {
+    title: '카드번호',
+    dataIndex: 'num',
+  },
+  {
+    title: '결제금액',
+    dataIndex: 'amount',
+  },
+  {
+    title: '승인여부',
+    dataIndex: 'status',
+  },
+  {
+    title: '국내외결제구분',
+    dataIndex: 'abroad',
+  },
+];
+
+const data = [];
+for (let i = 0; i < 46; i++) {
+  data.push({
+    key: i,
+    date: `2021/02/01 12:00:${i}`,
+    id: 20210226+`${i}`,
+    num: `1234-****-****-1234`,
+    amount: `${i}000`,
+    status: `승인`,
+    abroad: `국내`,
+  });
+}
+
+class PaymentTable extends React.Component {
+  state = {
+    selectedRowKeys: [], // Check here to configure the default column
+    loading: false,
+  };
+
+  start = () => {
+    this.setState({ loading: true });
+    // ajax request after empty completing
+    setTimeout(() => {
+      this.setState({
+        selectedRowKeys: [],
+        loading: false,
+      });
+    }, 1000);
+  };
+
+  onSelectChange = selectedRowKeys => {
+    console.log('selectedRowKeys changed: ', selectedRowKeys);
+    this.setState({ selectedRowKeys });
+  };
+
+  render() {
+    const { loading, selectedRowKeys } = this.state;
+    const rowSelection = {
+      selectedRowKeys,
+      onChange: this.onSelectChange,
+    };
+    const hasSelected = selectedRowKeys.length > 0;
+    return (
+      <div>
+        <div style={{ marginBottom: 16 }}>
+          <Button type="primary" style={{ float: 'left' }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+            검색
+          </Button>
+          <span style={{ marginLeft: 8 }}>
+            {hasSelected ? `Selected ${selectedRowKeys.length} items` : ''}
+          </span>
+        </div>
+        <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
+      </div>
+    );
+  }
+}
 
 class SiderDemo extends React.Component {
   state = {
@@ -52,9 +137,8 @@ class SiderDemo extends React.Component {
         <Layout className="site-layout">
           <Header className="site-layout-background" style={{ padding: 0 }} />
           <Content style={{ margin: '0 16px' }}>
-            결제 내역 페이지
+            <PaymentTable/>
           </Content>
-          <Footer style={{ textAlign: 'center' }}>TmaxData ©2021 Created by Chloe</Footer>
         </Layout>
       </Layout>
     );

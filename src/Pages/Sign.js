@@ -1,5 +1,5 @@
 import '../App.css';
-import logo from '../logo.svg';
+import tmax from '../tmax.gif';
 import React, { useState } from 'react';
 import DaumPostcode from "react-daum-postcode";
 import 'antd/dist/antd.css';
@@ -8,53 +8,16 @@ import {
   Form,
   Input,
   Tooltip,
-  Cascader,
   Select,
-  Row,
-  Col,
   Checkbox,
   Button,
-  AutoComplete,
   Modal,
   Space,
 } from 'antd';
-import { QuestionCircleOutlined, SearchOutlined } from '@ant-design/icons';
+import { QuestionCircleOutlined } from '@ant-design/icons';
 const { Option } = Select;
 const { Search } = Input;
-const addresses = [
-  {
-    value: '국내',
-    label: '국내',
-    children: [
-      {
-        value: '서울특별시',
-        label: '서울특별시',
-        children: [
-          {
-            value: '강남구',
-            label: '강남구',
-          },
-        ],
-      },
-    ],
-  },
-  {
-    value: '해외',
-    label: '해외',
-    children: [
-      {
-        value: 'U.S.A',
-        label: 'U.S.A',
-        children: [
-          {
-            value: 'Boston',
-            label: 'Boston',
-          },
-        ],
-      },
-    ],
-  },
-];
+
 const formItemLayout = {
   labelCol: {
     xs: {
@@ -157,14 +120,9 @@ const RegistrationForm = () => {
       </Select>
     </Form.Item>
   );
-  const [autoCompleteResult, setAutoCompleteResult] = useState([]);
 
-  const websiteOptions = autoCompleteResult.map((website) => ({
-    label: website,
-    value: website,
-  }));
   return (
-    <Form style={{margin: 'auto', maxWidth: '25%'}}
+    <Form style={{margin: 'auto', maxWidth: '30%'}}
       {...formItemLayout}
       form={form}
       name="register"
@@ -179,10 +137,6 @@ const RegistrationForm = () => {
         name="id"
         label="ID"
         rules={[
-          {
-            type: 'id',
-            message: '사용할 수 없는 아이디입니다!',
-          },
           {
             required: true,
             message: '아이디를 입력해주세요!',
@@ -267,39 +221,20 @@ const RegistrationForm = () => {
       <Form.Item
         name="address"
         label="주소"
-        rules={[
-          {
-            type: 'array',
-            required: true,
-            message: '법인 주소를 입력하세요!',
-          },
-        ]}
       >
         <ModalContainer/>
       </Form.Item>
 
       <Form.Item
-        name="phone"
+        name="ceo_nm"
         label="대표자 이름"
-        rules={[
-          {
-            required: true,
-            message: '대표자 성함을 입력해주세요!',
-          },
-        ]}
       >
         <Input/>
       </Form.Item>
 
       <Form.Item
-        name="phone"
+        name="ceo_phone"
         label="대표 번호"
-        rules={[
-          {
-            required: true,
-            message: '전화번호를 입력하세요!',
-          },
-        ]}
       >
         <Input
           addonBefore={prefixSelector}
@@ -315,11 +250,7 @@ const RegistrationForm = () => {
         rules={[
           {
             type: 'email',
-            message: '유효한 이메일이 아닙니다!',
-          },
-          {
-            required: true,
-            message: '이메일을 입력해주세요!',
+            message: '유효한 이메일이 아닙니다.',
           },
         ]}
       >
@@ -327,7 +258,7 @@ const RegistrationForm = () => {
       </Form.Item>
 
       <Form.Item
-        name="phone"
+        name="birth"
         label="생년월일"
       >
         <Input/>
@@ -345,12 +276,12 @@ const RegistrationForm = () => {
         {...tailFormItemLayout}
       >
         <Checkbox>
-          I have read the <a href="">agreement</a>
+          나는 <a href="https://kr.tmaxsoft.com/bbs.do?cms_cd=ETC_90">개인정보 처리방침</a>를 읽었으며, 이에 동의합니다.
         </Checkbox>
       </Form.Item>
       <Form.Item {...tailFormItemLayout}>
         <Button type="primary" htmlType="submit">
-          Register
+          회원가입
         </Button>
       </Form.Item>
     </Form>
@@ -361,7 +292,9 @@ function Sign() {
     return (
       <div className="App">
         <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
+          <a href="http://localhost:3000">
+            <img src={tmax} className="App-logo" alt="logo" />
+          </a>
           <RegistrationForm/>
         </header>
       </div>

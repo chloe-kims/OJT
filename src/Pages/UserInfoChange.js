@@ -1,8 +1,18 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
+import DaumPostcode from "react-daum-postcode";
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb, } from 'antd';
+import {
+  Layout,
+  Menu,
+  Form,
+  Input,
+  Select,
+  Button,
+  Modal,
+  Space,
+} from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -11,8 +21,209 @@ import {
   UserOutlined,
 } from '@ant-design/icons';
 
-const { Header, Content, Footer, Sider } = Layout;
+const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
+const { Option } = Select;
+const { Search } = Input;
+
+const formItemLayout = {
+  labelCol: {
+    xs: {
+      span: 24,
+    },
+    sm: {
+      span: 8,
+    },
+  },
+  wrapperCol: {
+    xs: {
+      span: 24,
+    },
+    sm: {
+      span: 16,
+    },
+  },
+};
+const tailFormItemLayout = {
+  wrapperCol: {
+    xs: {
+      span: 24,
+      offset: 0,
+    },
+    sm: {
+      span: 16,
+      offset: 8,
+    },
+  },
+};
+
+const Postcode = () => {
+  const handleComplete = (data) => {
+    let fullAddress = data.address;
+    let extraAddress = ''; 
+    
+    if (data.addressType === 'R') {
+      if (data.bname !== '') {
+        extraAddress += data.bname;
+      }
+      if (data.buildingName !== '') {
+        extraAddress += (extraAddress !== '' ? `, ${data.buildingName}` : data.buildingName);
+      }
+      fullAddress += (extraAddress !== '' ? ` (${extraAddress})` : '');
+    }
+
+    console.log(fullAddress);  // e.g. '서울 성동구 왕십리로2길 20 (성수동1가)'
+  }
+
+  return (
+    <DaumPostcode
+      onComplete={handleComplete}
+    />
+  );
+}
+
+const ModalContainer = () => {
+  const [isModalVisible, setIsModalVisible] = useState(false);
+
+  const showModal = () => {
+    setIsModalVisible(true);
+  };
+
+  const handleOk = () => {
+    setIsModalVisible(false);
+  };
+
+  const handleCancel = () => {
+    setIsModalVisible(false);
+  };
+
+  return (
+    <>
+      <Space direction="vertical" onClick={showModal} style={{ width: '100%' }}>
+        <Search placeholder="우편번호 검색" />
+      </Space>
+      <Modal visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
+        <Postcode/>
+      </Modal>
+    </>
+  );
+};
+
+const RegistrationForm = () => {
+  const [form] = Form.useForm();
+
+  const onFinish = (values) => {
+    console.log('Received values of form: ', values);
+  };
+
+  const prefixSelector = (
+    <Form.Item name="prefix" noStyle>
+      <Select
+        style={{
+          width: 70,
+        }}
+      >
+        <Option value="82">+82</Option>
+        <Option value="1">+1</Option>
+      </Select>
+    </Form.Item>
+  );
+
+  return (
+    <Form style={{margin: 'auto', maxWidth: '25%'}}
+      {...formItemLayout}
+      form={form}
+      name="register"
+      onFinish={onFinish}
+      initialValues={{
+        residence: ['국내', '서울', '강남구'],
+        prefix: '82',
+      }}
+      scrollToFirstError
+    >
+      <Form.Item
+        name="comp_nm"
+        label="법인명"
+        rules={[
+          {
+            whitespace: true,
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+
+      <Form.Item
+        name="address"
+        label="주소"
+        rules={[
+          {
+            type: 'array',
+          },
+        ]}
+      >
+        <ModalContainer/>
+      </Form.Item>
+
+      <Form.Item
+        name="phone"
+        label="대표자 이름"
+      >
+        <Input/>
+      </Form.Item>
+
+      <Form.Item
+        name="phone"
+        label="대표 번호"
+      >
+        <Input
+          addonBefore={prefixSelector}
+          style={{
+            width: '100%',
+          }}
+        />
+      </Form.Item>
+
+      <Form.Item
+        name="email"
+        label="대표 이메일"
+        rules={[
+          {
+            type: 'email',
+            message: '유효한 이메일이 아닙니다!',
+          },
+        ]}
+      >
+        <Input />
+      </Form.Item>
+
+      <Form.Item
+        name="phone"
+        label="생년월일"
+      >
+        <Input/>
+      </Form.Item>
+
+      <Form.Item
+        name="agreement"
+        valuePropName="checked"
+        rules={[
+          {
+            validator: (_, value) =>
+              value ? Promise.resolve() : Promise.reject('Should accept agreement'),
+          },
+        ]}
+        {...tailFormItemLayout}
+      >
+      </Form.Item>
+      <Form.Item {...tailFormItemLayout}>
+        <Button type="primary" htmlType="submit">
+          변경
+        </Button>
+      </Form.Item>
+    </Form>
+  );
+};
 
 class SiderDemo extends React.Component {
   state = {
@@ -51,10 +262,9 @@ class SiderDemo extends React.Component {
         </Sider>
         <Layout className="site-layout">
           <Header className="site-layout-background" style={{ padding: 0 }} />
-          <Content style={{ margin: '0 16px' }}>
-            회원 정보 수정 페이지
+          <Content style={{ margin: '150px' }}>
+              <RegistrationForm />
           </Content>
-          <Footer style={{ textAlign: 'center' }}>TmaxData ©2021 Created by Chloe</Footer>
         </Layout>
       </Layout>
     );
