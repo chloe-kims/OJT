@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Table, Button } from 'antd';
+import { Layout, Menu, Table, Button, Pagination } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -14,55 +14,54 @@ import {
 const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
 
+const username = 'admin';
+const pageSizeDefault = 20;
+
 const columns = [
   {
     title: '카드명',
-    dataIndex: 'name',
+    dataIndex: 'cardName',
+    width: '13%',
   },
   {
     title: '카드사',
-    dataIndex: 'company',
+    dataIndex: 'cardCompany',
+    width: '13%',
   },
   {
     title: '카드번호',
-    dataIndex: 'num',
+    dataIndex: 'cardNum',
+    width: '20%',
   },
   {
     title: '결제계좌번호',
-    dataIndex: 'account',
+    dataIndex: 'bankAccount',
+    width: '20%',
   },
   {
     title: '결제계좌은행명',
-    dataIndex: 'account_comp',
+    dataIndex: 'bank',
+    width: '13%',
   },
   {
     title: '유효기간',
-    dataIndex: 'expired_date',
+    dataIndex: 'cardExpirationDate',
+    width: '13%',
   },
   {
     title: '상태',
-    dataIndex: 'status',
+    dataIndex: 'cardStatus',
+    width: '8%',
   },
 ];
 
-const data = [];
-for (let i = 0; i < 46; i++) {
-  data.push({
-    key: i,
-    name: `S20카드 ${i}`,
-    company: `BC`,
-    num: `1234-****-****-00${i}`,
-    account: `010123*****123`,
-    account_comp: `신한`,
-    expired_date: `30/01`,
-    status: `사용중`
-  });
-}
-
 class CardTable extends React.Component {
+
   state = {
     selectedRowKeys: [], // Check here to configure the default column
-    loading: false,
+    loading: true,
+    cardData: [],
+    maxDataCount: -1,
   };
 
   start = () => {
@@ -71,9 +70,10 @@ class CardTable extends React.Component {
     setTimeout(() => {
       this.setState({
         selectedRowKeys: [],
-        loading: false,
+        loading: false
       });
     }, 1000);
+    
   };
 
   onSelectChange = selectedRowKeys => {
@@ -81,34 +81,94 @@ class CardTable extends React.Component {
     this.setState({ selectedRowKeys });
   };
 
+
+
+  // fetch data from server
+  fetchCardData = (pagination, filters, sorter) => {
+    
+    // POST request
+    const reqOpt = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        header: {
+          DATA_TYPE: 'J'
+        },
+        dto: {
+          USER_ID: username,
+          REQ_PAGESIZE: pagination.pageSize,
+          REQ_PAGEIDX: pagination.current
+        }
+      })
+    };
+
+    // send request & set response data to state
+    let response = fetch('http://192.1.4.246:14000/AB3-5/OJT/ReadCardInfo?action=SO', reqOpt)
+        .then(res => res.json());
+    response.then(
+      (response) => {
+        if ('dto' in response && 'CardInfo' in response.dto) {
+          let mappedCardData = response.dto.CardInfo.map((cardinfo, idx) => ({
+            key: idx,
+            cardName: cardinfo.CARD_NM,
+            cardCompany: cardinfo.CARDCO_NM,
+            cardNum: cardinfo.CARD_NUM,
+            bankAccount: cardinfo.BANK_ACC,
+            bank: cardinfo.BANK_NM,
+            cardExpirationDate: cardinfo.CARD_EXPIRED,
+            cardStatus: cardinfo.CARD_STATUS
+          }));
+          this.setState({cardData: mappedCardData});
+
+          if (!(pagination.current > 0)) {
+            this.setState({maxDataCount:
+                           response.dto.CardInfo[0].REQ_PAGESIZE
+                           * response.dto.CardInfo[0].REQ_PAGEIDX
+                          });
+          }
+          
+        } else {
+          console.log('Exception in response');
+        }
+      },
+      () => console.log('Failed to get response')
+    );
+  }
+
+
+  // initial fetch
+  componentDidMount() {
+    this.fetchCardData({pageSize: pageSizeDefault, current: -1});
+  }
+
   render() {
-    const { loading, selectedRowKeys } = this.state;
+    const { loading, selectedRowKeys, cardData, maxDataCount } = this.state;
     const rowSelection = {
       selectedRowKeys,
       onChange: this.onSelectChange,
-    };
+    };    
     const hasSelected = selectedRowKeys.length > 0;
     return (
-      <div>
+        <div>
         <div style={{ marginBottom: 16 }}>
-          <Button type="primary" style={{ float: 'left', margin: '0 2px' }} onClick={this.start} disabled={!hasSelected} loading={loading}>
-            검색
-          </Button>
-          <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
-            추가
-          </Button>
-          <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
-            수정
-          </Button>
-          <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
-            삭제
-          </Button>
-          <span style={{ marginLeft: 8 }}>
-            {hasSelected ? `Selected ${selectedRowKeys.length} items` : ''}
-          </span>
+        <Button type="primary" style={{ float: 'left', margin: '0 2px' }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+        검색
+      </Button>
+        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+        추가
+      </Button>
+        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+        수정
+      </Button>
+        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+        삭제
+      </Button>
+        <span style={{ marginLeft: 8 }}>
+        {hasSelected ? `Selected ${selectedRowKeys.length} items` : ''}
+      </span>
         </div>
-        <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
-      </div>
+        <Table rowSelection={rowSelection} columns={columns} dataSource={cardData} onChange={this.fetchCardData} pagination={{defaultPageSize: pageSizeDefault, total: maxDataCount}} />
+        </div>
     );
   }
 }
@@ -126,42 +186,42 @@ class SiderDemo extends React.Component {
   render() {
     const { collapsed } = this.state;
     return (
-      <Layout style={{ minHeight: '100vh' }}>
-         <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
-          <div className="logo" />
-          <Menu theme="dark" defaultSelectedKeys={['2']} mode="inline">
-            <Menu.Item key="1" icon={<TeamOutlined />}>
-              <Link to="/main">홈</Link>
-            </Menu.Item>
-            <Menu.Item key="2" icon={<PieChartOutlined />}>
-              <Link to="/card">카드 관리</Link>
-            </Menu.Item>
-            <Menu.Item key="3" icon={<DesktopOutlined />}>
-              <Link to="/payment">결제 내역</Link>
-            </Menu.Item>
-            <SubMenu key="sub1" icon={<UserOutlined />} title="회원 정보">
-              <Menu.Item key="4"><Link to="/userinfo/pw">비밀번호 변경</Link></Menu.Item>
-              <Menu.Item key="5"><Link to="/userinfo/change">회원정보 수정</Link></Menu.Item>
-            </SubMenu>
-            <Menu.Item key="6" icon={<FileOutlined />}>
-              <Link to="/file">파일</Link>
-            </Menu.Item>
-          </Menu>
+        <Layout style={{ minHeight: '100vh' }}>
+        <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
+        <div className="logo" />
+        <Menu theme="dark" defaultSelectedKeys={['2']} mode="inline">
+        <Menu.Item key="1" icon={<TeamOutlined />}>
+        <Link to="/main">홈</Link>
+        </Menu.Item>
+        <Menu.Item key="2" icon={<PieChartOutlined />}>
+        <Link to="/card">카드 관리</Link>
+        </Menu.Item>
+        <Menu.Item key="3" icon={<DesktopOutlined />}>
+        <Link to="/payment">결제 내역</Link>
+        </Menu.Item>
+        <SubMenu key="sub1" icon={<UserOutlined />} title="회원 정보">
+        <Menu.Item key="4"><Link to="/userinfo/pw">비밀번호 변경</Link></Menu.Item>
+        <Menu.Item key="5"><Link to="/userinfo/change">회원정보 수정</Link></Menu.Item>
+        </SubMenu>
+        <Menu.Item key="6" icon={<FileOutlined />}>
+        <Link to="/file">파일</Link>
+        </Menu.Item>
+        </Menu>
         </Sider>
         <Layout className="site-layout">
-          <Header className="site-layout-background" style={{ padding: 0 }} />
-          <Content style={{ margin: '0 16px' }}>
-            <CardTable/>
-          </Content>
+        <Header className="site-layout-background" style={{ padding: 0 }} />
+        <Content style={{ margin: '0 16px' }}>
+        <CardTable/>
+        </Content>
         </Layout>
-      </Layout>
+        </Layout>
     );
   }
 }
 
 function Card() {
   return (
-    <SiderDemo />
+      <SiderDemo />
   );
 }
 
