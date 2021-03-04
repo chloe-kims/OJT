@@ -3,7 +3,9 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Table, Button } from 'antd';
+import moment from 'moment';
+
+import { Layout, Menu, Table, Button, Input, Pagination, DatePicker, Space } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -14,36 +16,47 @@ import {
 
 const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
+const { Search } = Input;
+const { RangePicker } = DatePicker;
+
+const dateFormat = 'YYYY/MM/DD';
 
 const columns = [
   {
-    title: '거래일자',
-    dataIndex: 'date',
-  },
-  {
     title: '승인번호',
     dataIndex: 'pay_id',
+    width: '16%'
   },
   {
     title: '카드번호',
     dataIndex: 'card_num',
-  },
-  {
-    title: '결제금액',
-    dataIndex: 'amount',
-  },
-  {
-    title: '승인여부',
-    dataIndex: 'status',
+    width: '20%'
   },
   {
     title: '국내외결제구분',
     dataIndex: 'abroad',
+    width: '10%'
+  },
+  {
+    title: '승인여부',
+    dataIndex: 'status',
+    width: '10%'
+  },
+  {
+    title: '결제금액',
+    dataIndex: 'amount',
+    width: '12%'
+  },
+  {
+    title: '거래일자',
+    dataIndex: 'date',
+    width: '17%'
   },
   {
     title: '비고',
     dataIndex: 'memo',
-  },
+    width: '15%'
+  },  
 ];
 
 const data = [];
@@ -65,6 +78,8 @@ class PaymentTable extends React.Component {
     selectedRowKeys: [], // Check here to configure the default column
     payment_data: [],
     loading: false,
+    card_num: "",
+    range: [moment("2021-01-01"), moment("2021-12-31")]
   };
 
   loadData = (id) => {
@@ -77,21 +92,21 @@ class PaymentTable extends React.Component {
       }
     }
     axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/ReadPaymentTransactionAll?action=SO', data).then(response => {
-    const temp  = response.data.dto.PaymentTransactionList;
-    const data_source = [];
-    for (let i = 0; i < temp.length; i++) {
-      data_source.push({
-        key: i,
-        pay_id: temp[i].PAY_ID,
-        date: temp[i].PAY_TIME,
-        card_num: temp[i].CARD_NUM,
-        amount: temp[i].PAY_AMOUNT,
-        status: temp[i].PAY_STATUS === "E001" ? `승인` : `거절`,
-        abroad: temp[i].PAY_ABROAD === `C001` ? `국내` : `해외`,
-        memo: temp[i].PAY_MEMO
-      });
-    }
-    this.setState({payment_data: data_source})
+      const temp  = response.data.dto.PaymentTransactionList;
+      const data_source = [];
+      for (let i = 0; i < temp.length; i++) {
+        data_source.push({
+          key: i,
+          pay_id: temp[i].PAY_ID,
+          date: temp[i].PAY_TIME.slice(0,19),
+          card_num: temp[i].CARD_NUM.slice(0,4)+'-'+temp[i].CARD_NUM.slice(4,8)+'-'+temp[i].CARD_NUM.slice(8,12)+'-'+temp[i].CARD_NUM.slice(12,16),
+          amount: temp[i].PAY_AMOUNT+'원',
+          status: temp[i].PAY_STATUS === "E001" ? `승인` : `거절`,
+          abroad: temp[i].PAY_ABROAD === `C001` ? `국내` : `해외`,
+          memo: temp[i].PAY_MEMO
+        });
+      }
+      this.setState({payment_data: data_source, loading: true})
     }).catch(error => {
     });
   }
@@ -107,32 +122,99 @@ class PaymentTable extends React.Component {
     }, 1000);
   };
 
+  onSearch = (id) => {
+    this.setState({ loading: false })
+    const date_start = this.state.range[0].format(dateFormat);
+    const date_end = this.state.range[1].format(dateFormat);
+    const card_num = this.state.card_num;
+    if((date_start == null) || (date_end == null)){
+      alert("날짜를 입력해주세요.");
+    }else{
+      const data = {
+        "header": {
+            "DATA_TYPE": "3"
+        },
+        "dto": {
+            "USER_ID": 'admin', // TODO:: Need to change from props
+            "CARD_NUM": card_num,
+            "PAY_TIME_START": date_start,   // NOT NULL
+            "PAY_TIME_END": date_end      // NOT NULL
+        }
+      }
+      axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/ReadPaymentTransactionFromDate?action=SO', data).then(response => {
+        //console.log("post data: "+JSON.stringify(data));
+        const temp  = response.data.dto.PaymentTransactionList;
+        const data_source = [];
+        for (let i = 0; i < temp.length; i++) {
+          data_source.push({
+            key: i,
+            pay_id: temp[i].PAY_ID,
+            date: temp[i].PAY_TIME.slice(0,19),
+            card_num: temp[i].CARD_NUM.slice(0,4)+'-'+temp[i].CARD_NUM.slice(4,8)+'-'+temp[i].CARD_NUM.slice(8,12)+'-'+temp[i].CARD_NUM.slice(12,16),
+            amount: temp[i].PAY_AMOUNT+'원',
+            status: temp[i].PAY_STATUS === "E001" ? `승인` : `거절`,
+            abroad: temp[i].PAY_ABROAD === `C001` ? `국내` : `해외`,
+            memo: temp[i].PAY_MEMO
+          });
+        }
+        this.setState({ payment_data: data_source, loading: true })
+        //console.log('search data source:'+JSON.stringify(data_source));
+        // window.location.reload(); // data source 업뎃후에 어떻게 리프레쉬할지 생ㅇ각.
+
+      }).catch(error => {
+      });
+    }
+  };
+
+  onAdd = () => {
+    this.setState({ loading: true });
+    console.log('add');
+  };
+
+  onDelete = () => {
+    this.setState({ loading: true });
+    console.log('delete');
+  };
+
   onSelectChange = selectedRowKeys => {
     console.log('selectedRowKeys changed: ', selectedRowKeys);
     this.setState({ selectedRowKeys });
   };
+
+  onChange = (e) => {
+    this.setState({
+      card_num: e.target.value
+    });
+  }
 
   componentDidMount = (id) => {
     this.loadData(this.props.userid);
   }
 
   render() {
-    const { loading, selectedRowKeys } = this.state;
+    const { loading, selectedRowKeys, card_num } = this.state;
     const rowSelection = {
       selectedRowKeys,
       onChange: this.onSelectChange,
     };
     const hasSelected = selectedRowKeys.length > 0;
     const data = this.state.payment_data;
+    // console.log('render data source: '+JSON.stringify(data));
     return (
       <div>
-        <div style={{ marginBottom: 16 }}>
-          <Button type="primary" style={{ float: 'left' }} onClick={this.start} loading={loading}>
-            검색
-          </Button>
-          <span style={{ marginLeft: 8 }}>
-            {hasSelected ? `Selected ${selectedRowKeys.length} items` : ''}
-          </span>
+        <div style={{ marginTop: 10, marginBottom: 10, display: 'flex'}}>
+        <Search value={card_num} placeholder="카드번호" onSearch={this.onSearch} onChange={this.onChange} style={{ width: 200 }} />
+        <RangePicker
+          defaultValue={this.state.range}
+          format={dateFormat}
+          onChange={(value, dateString) => this.setState({ range: value })}
+        />
+        <Button style={{ float: 'left', margin: '0 2px'  }} onClick={this.onAdd} >
+          결제
+        </Button>
+        <Button danger style={{ float: 'left', margin: '0 2px', marginRight: 10  }} onClick={this.onDelete} disabled={!hasSelected} >
+          삭제
+        </Button>
         </div>
         <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
       </div>

@@ -25,7 +25,10 @@ class SiderDemo extends React.Component {
 
   render() {
     const { collapsed } = this.state;
-    const login = this.props.lastlogin.slice(0, 19)
+    var login = '';
+    if(this.props.lastlogin != null) login = this.props.lastlogin.slice(0,19);
+    // console.log(this.props.lastlogin)
+    // if(this.props.lastlogin.length != 0) login = this.props.lastlogin.slice(0, 19)
     return (
       <Layout style={{ minHeight: '100vh' }}>
         <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
