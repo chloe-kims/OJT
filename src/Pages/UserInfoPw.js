@@ -44,7 +44,7 @@ const FormLayoutDemo = () => {
       : null;
   return (
     <>
-      <Form style = {{width: '40vw', margin: 'auto'}}
+      <Form style = {{margin: 'auto', maxWidth: '50%', paddingRight: '30px'}}
         {...formItemLayout}
         layout={formLayout}
         form={form}

@@ -20,12 +20,12 @@ class SiderDemo extends React.Component {
   };
 
   onCollapse = collapsed => {
-    console.log(collapsed);
     this.setState({ collapsed });
   };
 
   render() {
     const { collapsed } = this.state;
+    const login = this.props.lastlogin.slice(0, 19)
     return (
       <Layout style={{ minHeight: '100vh' }}>
         <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
@@ -57,8 +57,8 @@ class SiderDemo extends React.Component {
               <Breadcrumb.Item>User</Breadcrumb.Item>
             </Breadcrumb>
             <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
-              Last Login: [DATE]
-              <br/>[USER]님 어서오세요.
+              마지막 접속: {login} <br/>
+              {this.props.userid}님 어서오세요.
             </div>
           </Content>
         </Layout>
@@ -67,11 +67,15 @@ class SiderDemo extends React.Component {
   }
 }
 
-function Main() {
+function Main({ userid, lastlogin }) {
+  const userID = userid;
+  const lastLogin = lastlogin;
   return (
-    <SiderDemo />
+    <SiderDemo userid={userID} lastlogin={lastLogin}/>
   );
 }
+
+
 
 export default Main;
 

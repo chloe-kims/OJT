@@ -1,5 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
+import axios from 'axios';
 import '../App.css';
 import 'antd/dist/antd.css';
 import { Layout, Menu, Table, Button } from 'antd';
@@ -21,11 +22,11 @@ const columns = [
   },
   {
     title: '승인번호',
-    dataIndex: 'id',
+    dataIndex: 'pay_id',
   },
   {
     title: '카드번호',
-    dataIndex: 'num',
+    dataIndex: 'card_num',
   },
   {
     title: '결제금액',
@@ -39,6 +40,10 @@ const columns = [
     title: '국내외결제구분',
     dataIndex: 'abroad',
   },
+  {
+    title: '비고',
+    dataIndex: 'memo',
+  },
 ];
 
 const data = [];
@@ -46,23 +51,54 @@ for (let i = 0; i < 46; i++) {
   data.push({
     key: i,
     date: `2021/02/01 12:00:${i}`,
-    id: 20210226+`${i}`,
-    num: `1234-****-****-1234`,
+    pay_id: 20210226+`${i}`,
+    card_num: `1234-****-****-1234`,
     amount: `${i}000`,
     status: `승인`,
     abroad: `국내`,
+    memo: ``,
   });
 }
 
 class PaymentTable extends React.Component {
   state = {
     selectedRowKeys: [], // Check here to configure the default column
+    payment_data: [],
     loading: false,
   };
 
+  loadData = (id) => {
+    const data = {
+      "header": {
+          "DATA_TYPE": "3"
+      },
+      "dto": {
+          "USER_ID": 'admin' // TODO:: Need to change from props
+      }
+    }
+    axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/ReadPaymentTransactionAll?action=SO', data).then(response => {
+    const temp  = response.data.dto.PaymentTransactionList;
+    const data_source = [];
+    for (let i = 0; i < temp.length; i++) {
+      data_source.push({
+        key: i,
+        pay_id: temp[i].PAY_ID,
+        date: temp[i].PAY_TIME,
+        card_num: temp[i].CARD_NUM,
+        amount: temp[i].PAY_AMOUNT,
+        status: temp[i].PAY_STATUS === "E001" ? `승인` : `거절`,
+        abroad: temp[i].PAY_ABROAD === `C001` ? `국내` : `해외`,
+        memo: temp[i].PAY_MEMO
+      });
+    }
+    this.setState({payment_data: data_source})
+    }).catch(error => {
+    });
+  }
+
   start = () => {
     this.setState({ loading: true });
-    // ajax request after empty completing
+    this.loadData('admin');
     setTimeout(() => {
       this.setState({
         selectedRowKeys: [],
@@ -76,6 +112,10 @@ class PaymentTable extends React.Component {
     this.setState({ selectedRowKeys });
   };
 
+  componentDidMount = (id) => {
+    this.loadData(this.props.userid);
+  }
+
   render() {
     const { loading, selectedRowKeys } = this.state;
     const rowSelection = {
@@ -83,10 +123,11 @@ class PaymentTable extends React.Component {
       onChange: this.onSelectChange,
     };
     const hasSelected = selectedRowKeys.length > 0;
+    const data = this.state.payment_data;
     return (
       <div>
         <div style={{ marginBottom: 16 }}>
-          <Button type="primary" style={{ float: 'left' }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+          <Button type="primary" style={{ float: 'left' }} onClick={this.start} loading={loading}>
             검색
           </Button>
           <span style={{ marginLeft: 8 }}>
@@ -111,6 +152,7 @@ class SiderDemo extends React.Component {
 
   render() {
     const { collapsed } = this.state;
+    const userid = this.props.userid;
     return (
       <Layout style={{ minHeight: '100vh' }}>
  <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
@@ -137,7 +179,7 @@ class SiderDemo extends React.Component {
         <Layout className="site-layout">
           <Header className="site-layout-background" style={{ padding: 0 }} />
           <Content style={{ margin: '0 16px' }}>
-            <PaymentTable/>
+            <PaymentTable userid={userid}/>
           </Content>
         </Layout>
       </Layout>
@@ -145,9 +187,10 @@ class SiderDemo extends React.Component {
   }
 }
 
-function Payment() {
+function Payment({ userid }) {
+  const userID = userid;
   return (
-    <SiderDemo />
+    <SiderDemo userid={userID}/>
   );
 }
 

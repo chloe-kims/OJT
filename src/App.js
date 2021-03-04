@@ -1,33 +1,94 @@
 import './App.css';
-
+import React, { useState, createRef } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
 
+import { onLogin } from './auth';
+import AuthRoute from './AuthRoute';
+import Home from './Pages/Home';
 import Login from './Pages/Login';
 import Main from './Pages/Main';
 import Sign from './Pages/Sign';
 import Card from './Pages/Card';
 import Payment from './Pages/Payment';
-import UserinfoPw from './Pages/UserInfoPw';
-import UserinfoChange from './Pages/UserInfoChange';
+import UserInfoPw from './Pages/UserInfoPw';
+import UserInfoChange from './Pages/UserInfoChange';
 import File from './Pages/File';
 import Deny from './Pages/Deny';
 import 'antd/dist/antd.css';
 import { Layout } from 'antd';
 const { Footer } = Layout;
 
+// function onLogin ({ id, password }) {
+//   return new Promise ((resolve, reject) => {
+//       // const user = users.find(user => user.id === id && user.password === password);
+//       // console.log(user)
+//       // return user;
+//       const data = {
+//           "header": {
+//               "DATA_TYPE": "3"
+//           },
+//           "dto": {
+//               "USER_ID": id,
+//               "USER_PW": password
+//           }
+//       }
+//       var result;
+//       axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/ReadUserAccount?action=SO', data)
+//       .then(response => {
+//           const user = response.data.dto;
+//           const auth = (user.USER_PW === password);
+//           console.log('Axios return: '+JSON.stringify(user))
+//           resolve(user);
+//       }).catch((e) => {
+//           console.log('axios error');
+//           reject(e)
+//       });
+//     })
+// }
+
 function App() {
+  const [user, setUser] = useState();
+  const authenticated = (user != null);
+
+  // const login = ({ id, password }) => {
+  //   const { data: userinfo, error, isLoading } = useAsync({
+  //     promiseFn: onLogin
+  //   })
+  //   setUser(userinfo);
+  // }
+  const login = ({ id, password }) => {
+    onLogin({ id, password }).then(response => setUser(response));
+    // setUser(onLogin({ id, password }));
+  }
+  // const logout = () => setUser(null);
+  // console.log('App has User: '+JSON.stringify(user));
+  // console.log(authenticated);
+
+
   return (
     <div className="App">
       <Router>
         <Switch>
-          <Route path='/' exact component={ Login } />
-          <Route path='/main' component={ Main } />
+          <Route exact path='/' component={ Home } />
           <Route path='/sign' component={ Sign } />
+          <Route
+            path='/login'
+            render={props => (
+              <Login authenticated={authenticated} login={login} {...props} />
+            )}
+          />
+          <AuthRoute
+          authenticated={authenticated}
+          path='/main'
+          render={props =>  (
+            <Main userid={user.USER_ID} lastlogin={user.LAST_LOGIN} />
+          )}
+          />
           <Route path='/card' component={ Card } />
-          <Route path='/payment' component={ Payment } />
-          <Route path='/userinfo/pw' component={ UserinfoPw } />
-          <Route path='/userinfo/change' component={ UserinfoChange } />          
-          <Route path='/file' component={ File } />          
+          <Route path='/payment' component={ Payment }/>
+          <Route path='/userinfo/pw' component={ UserInfoPw } />
+          <Route path='/userinfo/change' component={ UserInfoChange } />          
+          <Route path='/file' component={ File } />     
           <Route path='/' component={ Deny } />
         </Switch>
       </Router>
@@ -38,3 +99,34 @@ function App() {
 
 export default App;
 
+
+{/* <AuthRoute authenticated={authenticated}
+path='/card'
+render={props =>  (
+  <Card userid={user.USER_ID} />
+)}
+/>
+<AuthRoute authenticated={authenticated}
+path='/payment'
+render={props =>  (
+  <Payment userid={user.USER_ID} />
+ )}
+/>
+<AuthRoute authenticated={authenticated}
+path='/userinfo/pw'
+render={props =>  (
+  <UserInfoPw userid={user.USER_ID} />
+)}
+/>
+<AuthRoute authenticated={authenticated}
+path='/userinfo/change'
+render={props =>  (
+  <UserInfoChange userid={user.USER_ID} />
+)}
+/>
+<AuthRoute authenticated={authenticated}
+path='/file' 
+render={props =>  (
+  <File userid={user.USER_ID} />
+)}
+/>   */}
