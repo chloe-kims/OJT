@@ -118,13 +118,10 @@ class CardTable extends React.Component {
             cardExpirationDate: cardinfo.CARD_EXPIRED,
             cardStatus: cardinfo.CARD_STATUS
           }));
-          this.setState({cardData: mappedCardData});
+          this.setState({ cardData: mappedCardData });
 
           if (!(pagination.current > 0)) {
-            this.setState({maxDataCount:
-                           response.dto.CardInfo[0].REQ_PAGESIZE
-                           * response.dto.CardInfo[0].REQ_PAGEIDX
-                          });
+            this.setState({ maxDataCount: response.dto.CardInfo[0].REQ_PAGEIDX });
           }
           
         } else {
