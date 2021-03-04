@@ -14,6 +14,8 @@ import {
 const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
 
+const reqUrl = 'http://192.1.4.246:14000/AB3-5/OJT/';
+const soName = 'ReadCardInfo';
 const username = 'admin';
 const pageSizeDefault = 20;
 
@@ -67,13 +69,14 @@ class CardTable extends React.Component {
   start = () => {
     this.setState({ loading: true });
     // ajax request after empty completing
+    /*
     setTimeout(() => {
       this.setState({
         selectedRowKeys: [],
         loading: false
       });
     }, 1000);
-    
+    */
   };
 
   onSelectChange = selectedRowKeys => {
@@ -85,6 +88,7 @@ class CardTable extends React.Component {
 
   // fetch data from server
   fetchCardData = (pagination, filters, sorter) => {
+    this.setState({loading: true});
     
     // POST request
     const reqOpt = {
@@ -103,12 +107,14 @@ class CardTable extends React.Component {
     };
 
     // send request & set response data to state
-    let response = fetch('http://192.1.4.246:14000/AB3-5/OJT/ReadCardInfo?action=SO', reqOpt)
+    let response = fetch(reqUrl + soName + '?action=SO', reqOpt)
         .then(res => res.json());
     response.then(
-      (response) => {
-        if ('dto' in response && 'CardInfo' in response.dto) {
-          let mappedCardData = response.dto.CardInfo.map((cardinfo, idx) => ({
+      (responseJson) => {
+        let newState = {loading: false};
+        if ('dto' in responseJson && 'CardInfo' in responseJson.dto) {
+          
+          let mappedCardData = responseJson.dto.CardInfo.map((cardinfo, idx) => ({
             key: idx,
             cardName: cardinfo.CARD_NM,
             cardCompany: cardinfo.CARDCO_NM,
@@ -118,17 +124,21 @@ class CardTable extends React.Component {
             cardExpirationDate: cardinfo.CARD_EXPIRED,
             cardStatus: cardinfo.CARD_STATUS
           }));
-          this.setState({ cardData: mappedCardData });
+          newState.cardData = mappedCardData;
 
           if (!(pagination.current > 0)) {
-            this.setState({ maxDataCount: response.dto.CardInfo[0].REQ_PAGEIDX });
+            newState.maxDataCount = responseJson.dto.CardInfo[0].REQ_PAGEIDX;
           }
           
         } else {
           console.log('Exception in response');
         }
+        this.setState(newState);
       },
-      () => console.log('Failed to get response')
+      () => {
+        this.setState({loading: false});
+        console.log('Failed to get response');
+      }
     );
   }
 
@@ -148,23 +158,23 @@ class CardTable extends React.Component {
     return (
         <div>
         <div style={{ marginBottom: 16 }}>
-        <Button type="primary" style={{ float: 'left', margin: '0 2px' }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+        <Button type="primary" style={{ float: 'left', margin: '0 2px' }} onClick={this.start} disabled={!hasSelected} >
         검색
       </Button>
-        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} >
         추가
       </Button>
-        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} >
         수정
       </Button>
-        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} loading={loading}>
+        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} >
         삭제
       </Button>
         <span style={{ marginLeft: 8 }}>
         {hasSelected ? `Selected ${selectedRowKeys.length} items` : ''}
       </span>
         </div>
-        <Table rowSelection={rowSelection} columns={columns} dataSource={cardData} onChange={this.fetchCardData} pagination={{defaultPageSize: pageSizeDefault, total: maxDataCount}} />
+        <Table rowSelection={rowSelection} columns={columns} dataSource={cardData} onChange={this.fetchCardData} pagination={{defaultPageSize: pageSizeDefault, total: maxDataCount}} loading={loading} />
         </div>
     );
   }
