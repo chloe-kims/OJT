@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Table, Button, Pagination } from 'antd';
+import { Layout, Menu, Table, Button, Input, Pagination } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -13,12 +13,14 @@ import {
 
 const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
+const { Search } = Input;
 
-const reqUrl = 'http://192.1.4.246:14000/AB3-5/OJT/';
-const soName = 'ReadCardInfo';
+// config
+const reqBaseUrl = 'http://192.1.4.246:14000/AB3-5/OJT/';
 const username = 'admin';
-const pageSizeDefault = 20;
+const pageSizeDefault = 10;
 
+// table columns
 const columns = [
   {
     title: '카드명',
@@ -64,23 +66,15 @@ class CardTable extends React.Component {
     loading: true,
     cardData: [],
     maxDataCount: -1,
+    searchString: null,
   };
 
   start = () => {
     this.setState({ loading: true });
-    // ajax request after empty completing
-    /*
-    setTimeout(() => {
-      this.setState({
-        selectedRowKeys: [],
-        loading: false
-      });
-    }, 1000);
-    */
   };
 
   onSelectChange = selectedRowKeys => {
-    console.log('selectedRowKeys changed: ', selectedRowKeys);
+    //console.log('selectedRowKeys changed: ', selectedRowKeys);
     this.setState({ selectedRowKeys });
   };
 
@@ -89,6 +83,27 @@ class CardTable extends React.Component {
   // fetch data from server
   fetchCardData = (pagination, filters, sorter) => {
     this.setState({loading: true});
+
+    // set searchString
+    const { searchString } = this.state;
+    let searchCardName = searchString;
+    let searchCardNum = searchString;
+
+    // if filters has input, then use searchString from filter
+    // as searchString from state is not updated yet
+    if (filters != null) {
+      if (filters.cardName != null && filters.cardName[0] != null) {
+        searchCardName = filters.cardName[0];
+      } else {
+        searchCardName = null;
+      }
+      if (filters.cardNum != null && filters.cardNum[0] != null) {
+        searchCardNum = filters.cardNum[0];
+      } else {
+        searchCardNum = null;
+      }
+    }
+    
     
     // POST request
     const reqOpt = {
@@ -100,6 +115,8 @@ class CardTable extends React.Component {
         },
         dto: {
           USER_ID: username,
+          CARD_NM: searchCardName,
+          CARD_NUM: searchCardNum,
           REQ_PAGESIZE: pagination.pageSize,
           REQ_PAGEIDX: pagination.current
         }
@@ -107,7 +124,7 @@ class CardTable extends React.Component {
     };
 
     // send request & set response data to state
-    let response = fetch(reqUrl + soName + '?action=SO', reqOpt)
+    let response = fetch(reqBaseUrl + 'ReadCardInfo?action=SO', reqOpt)
         .then(res => res.json());
     response.then(
       (responseJson) => {
@@ -132,6 +149,7 @@ class CardTable extends React.Component {
           
         } else {
           console.log('Exception in response');
+          newState.cardData = [];
         }
         this.setState(newState);
       },
@@ -141,6 +159,23 @@ class CardTable extends React.Component {
       }
     );
   }
+
+  /*
+  onPageChange = (page, pageSize) => {
+    console.log('onPageChange');
+    console.log(page);
+    console.log(pageSize);
+
+    //this.setState({ pageSize: pageSize, pageIdx: page });
+  }
+  */
+  
+  onSearch = (searchStringInput) => {
+    //console.log('onSearch', searchStringInput);
+    this.setState({ searchString: searchStringInput });
+    this.fetchCardData({pageSize: pageSizeDefault, current: -1},
+                       {cardName: [searchStringInput], cardNum: [searchStringInput]});
+  };
 
 
   // initial fetch
@@ -153,28 +188,27 @@ class CardTable extends React.Component {
     const rowSelection = {
       selectedRowKeys,
       onChange: this.onSelectChange,
-    };    
+    };
+    const pagination = {
+      defaultPageSize: pageSizeDefault,
+      total: maxDataCount,
+    }
     const hasSelected = selectedRowKeys.length > 0;
     return (
         <div>
-        <div style={{ marginBottom: 16 }}>
-        <Button type="primary" style={{ float: 'left', margin: '0 2px' }} onClick={this.start} disabled={!hasSelected} >
-        검색
-      </Button>
-        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} >
+        <div style={{ marginTop: 10, marginBottom: 10, display: 'flex'}}>
+        <Search placeholder="카드명 또는 카드번호" onSearch={this.onSearch} style={{ width: 200 }} />
+        <Button style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} >
         추가
       </Button>
-        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} >
+        <Button style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} >
         수정
       </Button>
-        <Button type="primary" style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} >
+        <Button danger style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!hasSelected} >
         삭제
       </Button>
-        <span style={{ marginLeft: 8 }}>
-        {hasSelected ? `Selected ${selectedRowKeys.length} items` : ''}
-      </span>
         </div>
-        <Table rowSelection={rowSelection} columns={columns} dataSource={cardData} onChange={this.fetchCardData} pagination={{defaultPageSize: pageSizeDefault, total: maxDataCount}} loading={loading} />
+        <Table rowSelection={rowSelection} columns={columns} dataSource={cardData} onChange={this.fetchCardData} pagination={pagination} loading={loading} />
         </div>
     );
   }
