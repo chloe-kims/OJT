@@ -386,7 +386,7 @@ class CardTable extends React.Component {
   
 
   // createCardinfoModalForm: returns add/mod cardinfo modal form, which can be inserted in render()
-  createCardinfoModalForm = (formId, titleText, submitText, visibleState, hideFunc, submitFunc, initValues, itemDisabledStates) => {
+  createCardinfoModalForm = (formId, titleText, submitText, cancelText, visibleState, hideFunc, submitFunc, initValues, itemDisabledStates) => {
     
     const {
       requestInProgress,
@@ -402,26 +402,19 @@ class CardTable extends React.Component {
       onCancel={hideFunc}
       destroyOnClose={true}
       footer={[
+          <Button type="default" disabled={requestInProgress} onClick={hideFunc}>
+          {cancelText}
+        </Button>,
           <Button form={formId} type="primary"
         key="submit" htmlType="submit" loading={requestInProgress}>
           {submitText}
         </Button>
-        ]}
+      ]}
         >
         <Form id={formId} onFinish={submitFunc}
       initialValues={initValues}
       {...modanFormLayout} >
         
-        <Form.Item name='cardNum' label='카드번호'
-        rules={[
-          {
-            required: true,
-            message: '필수 입력 항목입니다.',
-          }
-        ]}>
-        <Input placeholder="'-' 없이 숫자만 입력"
-      disabled={itemDisabledStates ? itemDisabledStates.cardNum : null} />
-        </Form.Item>
         
         <Form.Item name='cardName' label='카드명'
         rules={[
@@ -445,6 +438,17 @@ class CardTable extends React.Component {
       disabled={itemDisabledStates ? itemDisabledStates.cardCompany : null} >
         {cardcoList}
         </Select>
+        </Form.Item>
+        
+        <Form.Item name='cardNum' label='카드번호'
+        rules={[
+          {
+            required: true,
+            message: '필수 입력 항목입니다.',
+          }
+        ]}>
+        <Input placeholder="'-' 없이 숫자만 입력"
+      disabled={itemDisabledStates ? itemDisabledStates.cardNum : null} />
         </Form.Item>
         
         <Form.Item name='bank' label='결제계좌은행명'
@@ -739,7 +743,7 @@ class CardTable extends React.Component {
         추가
       </Button>
         
-      {this.createCardinfoModalForm("addForm", "카드 추가", "추가",
+      {this.createCardinfoModalForm("addForm", "카드 추가", "추가", "취소",
                                     isAddCardDiagVisible,
                                     this.hideAddCardDiag,
                                     this.setCardInfo,
@@ -750,12 +754,16 @@ class CardTable extends React.Component {
         수정
       </Button>
         
-      {this.createCardinfoModalForm("modForm", "카드 수정", "수정",
+      {this.createCardinfoModalForm("modForm", "카드 수정", "수정", "취소",
                                     isModCardDiagVisible,
                                     this.hideModCardDiag,
                                     this.setCardInfo,
                                     selectedCardData,
-                                    {cardNum: true})}
+                                    {
+                                      cardNum: true,
+                                      cardCompany: true,
+                                      cardExpirationDate: true
+                                    })}
       
         <Button danger onClick={this.showDelCardDiag} disabled={!itemSelected} >
         삭제
