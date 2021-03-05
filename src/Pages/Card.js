@@ -85,7 +85,7 @@ class CardTable extends React.Component {
     maxDataCount: -1,
     pageSize: pageSizeDefault,
     pageIdx: 1,
-    searchString: "",
+    searchString: null,
     isAddCardDiagVisible: false,
     isModCardDiagVisible: false,
     isDelCardDiagVisible: false,
@@ -227,6 +227,13 @@ class CardTable extends React.Component {
         searchCardNum = filters.cardNum[0];
       }
     }
+
+    let errStrPrefix;
+    if (searchCardName == null) {
+      errStrPrefix = '회원 \'' + username + '\' 의 ';
+    } else {
+      errStrPrefix = '검색어 \'' + searchCardName + '\' 에 해당하는 '
+    }
     
     // POST request
     const reqOpt = {
@@ -246,6 +253,8 @@ class CardTable extends React.Component {
       })
     };
 
+    console.log(reqOpt);
+    
     // send request & get response
     let response = fetch(reqBaseUrl + 'ReadCardInfo?action=SO', reqOpt)
         .then(res => res.json());
@@ -256,7 +265,8 @@ class CardTable extends React.Component {
         let newState = {loading: false};
 
         // received data successfully
-        if ('dto' in responseJson && 'CardInfo' in responseJson.dto) {
+        if ('dto' in responseJson && 'CardInfo' in responseJson.dto
+            && responseJson.dto.CardInfo.length > 1) {
 
           newState.selectedRowKeys = [];
           
@@ -277,7 +287,6 @@ class CardTable extends React.Component {
             newState.maxDataCount = responseJson.dto.CardInfo[0].REQ_PAGEIDX;
             newState.pageIdx = 1;
           }
-
         }
         
         // no data received
@@ -285,7 +294,7 @@ class CardTable extends React.Component {
           if ('exception' in responseJson) { 
             message.error('서버와 연결할 수 없습니다.');
           } else {
-            message.error('해당하는 카드가 존재하지 않습니다.');
+            message.error(errStrPrefix + '카드가 존재하지 않습니다.');
           }
           newState.cardData = [];
         }
