@@ -4,6 +4,7 @@ import tmax from '../tmax.gif';
 import React, { useState } from 'react';
 import DaumPostcode from "react-daum-postcode";
 import 'antd/dist/antd.css';
+import crypto from 'crypto';
 
 import {
   Form,
@@ -120,13 +121,14 @@ const RegistrationForm = () => {
     // console.log({addr});
     let big_addr = JSON.stringify({addr}).slice(9, -2);
     let date = new Date();
+    const pw = crypto.createHash('sha512').update(values.password).digest('base64');
     const data = {
       "header": {
           "DATA_TYPE": "3"
       },
       "dto": {
         "USER_ID": values.id,
-        "USER_PW": values.password,
+        "USER_PW": pw,
         "COMP_NM": values.comp_nm,
         "COMP_ADDR": big_addr+' '+values.detail_address,
         "COMP_CONTACT": values.ceo_phone,
@@ -137,7 +139,7 @@ const RegistrationForm = () => {
         "LAST_LOGIN": '2021-02-23 02:05:01'
       }
     }
-    // console.log(data);
+    console.log(data);
     axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/InsertUserAccount?action=SO', data).then(response => {
       alert('회원가입이 완료되었습니다.')
 

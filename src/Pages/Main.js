@@ -25,6 +25,7 @@ class SiderDemo extends React.Component {
 
   render() {
     const { collapsed } = this.state;
+    const temp = window.sessionStorage.getItem('id');
     var login = '';
     if(this.props.lastlogin != null) login = this.props.lastlogin.slice(0,19);
     // console.log(this.props.lastlogin)
@@ -61,7 +62,7 @@ class SiderDemo extends React.Component {
             </Breadcrumb>
             <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
               마지막 접속: {login} <br/>
-              {this.props.userid}님 어서오세요.
+              {temp}님 어서오세요.
             </div>
           </Content>
         </Layout>

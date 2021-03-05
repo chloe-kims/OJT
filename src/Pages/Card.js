@@ -19,7 +19,7 @@ const { Option } = Select;
 
 // config
 const reqBaseUrl = 'http://192.1.4.246:14000/AB3-5/OJT/';
-const username = 'admin';
+const username = window.sessionStorage.getItem('id');
 const pageSizeDefault = 10;
 const modanFormLayout = {
   labelCol: {

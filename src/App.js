@@ -57,7 +57,12 @@ function App() {
   //   setUser(userinfo);
   // }
   const login = ({ id, password }) => {
-    onLogin({ id, password }).then(response => setUser(response));
+    onLogin({ id, password })
+    .then(response => setUser(response))
+    .catch((e) => { 
+      console.log(e)
+      alert('로그인에 실패하였습니다.')
+    });
     // setUser(onLogin({ id, password }));
   }
   // const logout = () => setUser(null);
@@ -84,11 +89,36 @@ function App() {
             <Main userid={user.USER_ID} lastlogin={user.LAST_LOGIN} />
           )}
           />
-          <Route path='/card' component={ Card } />
-          <Route path='/payment' component={ Payment }/>
-          <Route path='/userinfo/pw' component={ UserInfoPw } />
-          <Route path='/userinfo/change' component={ UserInfoChange } />          
-          <Route path='/file' component={ File } />     
+          <AuthRoute authenticated={authenticated}
+          path='/card'
+          render={props =>  (
+            <Card userid={user.USER_ID} />
+          )}
+          />
+          <AuthRoute authenticated={authenticated}
+          path='/payment'
+          render={props =>  (
+            <Payment userid={user.USER_ID} />
+          )}
+          />
+          <AuthRoute authenticated={authenticated}
+          path='/userinfo/pw'
+          render={props =>  (
+            <UserInfoPw userid={user.USER_ID} />
+          )}
+          />
+          <AuthRoute authenticated={authenticated}
+          path='/userinfo/change'
+          render={props =>  (
+            <UserInfoChange userid={user.USER_ID} />
+          )}
+          />
+          <AuthRoute authenticated={authenticated}
+          path='/file' 
+          render={props =>  (
+            <File userid={user.USER_ID} />
+          )}
+          /> 
           <Route path='/' component={ Deny } />
         </Switch>
       </Router>

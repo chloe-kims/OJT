@@ -47,19 +47,21 @@ const FormLayoutDemo = () => {
       : null;
 
 
-  const updatePw = (id) => {
+  const updatePw = () => {
+    const id = window.sessionStorage.getItem('id');
     const old_data = {
       "header": {
           "DATA_TYPE": "3"
       },
       "dto": {
-          "USER_ID": 'admin', // TODO:: Need to change from props
+          "USER_ID": id
       }
     }
 
     axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/ReadUserAccount?action=SO', old_data).then(response => {
       console.log('old post data: '+JSON.stringify(old_data))
       // console.log(response)
+      const id = window.sessionStorage.getItem('id');
       const p = response.data.dto.USER_PW;
       const n = response.data.dto.COMP_NM;
       const new_data = {
@@ -67,7 +69,7 @@ const FormLayoutDemo = () => {
             "DATA_TYPE": "3"
         },
         "dto": {
-            "USER_ID": 'admin', // TODO:: Need to change from props
+            "USER_ID": id,
             "USER_PW": newpw,
             "COMP_NM": n        // TODO:: 비밀번호 변경용 SO 하나 더 만들기, 나머지가 null로 들어가니까 다 비워지게되어버림,,
         }
