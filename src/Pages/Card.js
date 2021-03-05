@@ -400,7 +400,7 @@ class CardTable extends React.Component {
     if (initValues == null) {
       initValues = {cardStatus: '사용'};
     }
-
+  
     return (
         <Modal title={titleText} visible={visibleState}
       onCancel={hideFunc}
@@ -718,7 +718,7 @@ class CardTable extends React.Component {
     }
     const itemSelected = selectedRowKeys.length > 0;
     const oneItemSelected = selectedRowKeys.length == 1;
-    
+    console.log(window.sessionStorage.getItem('id'))
     return (
         <div>
         <div style={{ marginTop: 10, marginBottom: 10, display: 'flex'}}>
@@ -778,7 +778,7 @@ class SiderDemo extends React.Component {
     window.sessionStorage.clear();
     window.location.reload();
   }
-  
+
   render() {
     const { collapsed } = this.state;
     return (
@@ -799,9 +799,6 @@ class SiderDemo extends React.Component {
         <Menu.Item key="4"><Link to="/userinfo/pw">비밀번호 변경</Link></Menu.Item>
         <Menu.Item key="5"><Link to="/userinfo/change">회원정보 수정</Link></Menu.Item>
         </SubMenu>
-        <Menu.Item key="6" icon={<FileOutlined />}>
-        <Link to="/file">파일</Link>
-        </Menu.Item>
         </Menu>
         </Sider>
         <Layout className="site-layout">

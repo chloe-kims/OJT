@@ -218,7 +218,7 @@ class SiderDemo extends React.Component {
     console.log(collapsed);
     this.setState({ collapsed });
   };
-  
+
   handleClick(){
     window.location.href = "http://localhost:3000";
     window.sessionStorage.clear();
@@ -245,9 +245,6 @@ class SiderDemo extends React.Component {
               <Menu.Item key="4"><Link to="/userinfo/pw">비밀번호 변경</Link></Menu.Item>
               <Menu.Item key="5"><Link to="/userinfo/change">회원정보 수정</Link></Menu.Item>
             </SubMenu>
-            <Menu.Item key="6" icon={<FileOutlined />}>
-              <Link to="/file">파일</Link>
-            </Menu.Item>
           </Menu>
         </Sider>
         <Layout className="site-layout">

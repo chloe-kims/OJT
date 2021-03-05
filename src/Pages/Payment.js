@@ -5,7 +5,7 @@ import '../App.css';
 import 'antd/dist/antd.css';
 import moment from 'moment';
 
-import { Layout, Menu, Table, Button, Input, Pagination, Modal, DatePicker, Form, Radio } from 'antd';
+import { Layout, Menu, Table, Button, Input, Pagination, Modal, DatePicker, Form, Radio, message, Select } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -18,6 +18,8 @@ const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
 const { Search } = Input;
 const { RangePicker } = DatePicker;
+const { Option } = Select;
+
 const modanFormLayout = {
   labelCol: {
     span: 6,
@@ -67,23 +69,38 @@ class PaymentTable extends React.Component {
   state = {
     selectedRowKeys: [], // Check here to configure the default column
     payment_data: [],
-    deletePayIDs: [],
+    selectedPayID: [],
+    cardList: [],
     loading: false,
     isAddPayDiagVisible: false,
+    isDelPayDiagVisible: false,
+    requestInProgress: false,
     card_num: "",
     range: [moment("2021-01-01"), moment("2021-12-31")]
   };
 
   showAddPayDiag = () => {
-    this.setState({ isAddPayDiagVisible: true });
+    this.setState({ isAddPayDiagVisible: true, isDelCardDiagVisible: false });
   };
   
   hideAddPayDiag = () => {
     this.setState({ isAddPayDiagVisible: false });
   };
 
-  loadData = () => {
-    const id = window.sessionStorage.getItem('id');
+  showDelPayDiag = () => {
+    // set card data to process on del modal
+    this.setState({
+      isAddPayDiagVisible: false,
+      isDelPayDiagVisible: true,
+    });
+  };
+
+  // hideDelCardDiag: hide del modal
+  hideDelPayDiag = () => {
+    this.setState({ isDelPayDiagVisible: false });
+  };
+
+  loadData = (id) => {
     const data = {
       "header": {
           "DATA_TYPE": "3"
@@ -107,8 +124,10 @@ class PaymentTable extends React.Component {
           memo: temp[i].PAY_MEMO
         });
       }
+      // console.log(data_source)
       this.setState({payment_data: data_source, loading: true})
     }).catch(error => {
+      this.setState({ payment_data: []});
     });
   }
 
@@ -119,7 +138,7 @@ class PaymentTable extends React.Component {
     const card_num = this.state.card_num;
     const id = window.sessionStorage.getItem('id');
     if((date_start == null) || (date_end == null)){
-      alert("날짜를 입력해주세요.");
+      message.error("날짜를 입력해주세요.");
     }else{
       const data = {
         "header": {
@@ -156,15 +175,52 @@ class PaymentTable extends React.Component {
 
   };
 
+  loadCardList = (id) => {
+    // const id = window.sessionStorage.getItem('id');
+    const data = {
+      "header": {
+          "DATA_TYPE": "3"
+      },
+      "dto": {
+          "USER_ID": id
+      }
+    }
+    axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/ReadPaymentCardList?action=SO', data).then(response => {
+      const temp  = response.data.dto.paymentCardList;
+      const card_data = [];
+      for (let i = 0; i < temp.length; i++) {
+        card_data.push({
+          key: i,
+          name: temp[i].CARD_NM+'('+temp[i].CARD_NUM.slice(-4,)+')'
+        })
+      }
+      // console.log(card_data)
+      this.setState({ cardList: card_data, loading: true})
+    }).catch(error => {
+      this.setState({ cardList: []});
+    });
+  }
+
+  onCardChange = (value) => {
+    console.log(value)
+  }
+
+  onCardSearch = (val) => {
+    console.log(val)
+  }
+
   addPayInfo = (payinfo) => {
     // var payDate = new Date(payinfo.payDate);
+    this.setState({requestInProgress: true});
+    const id = window.sessionStorage.getItem('id');
+    
     const date = payinfo.payDate.format(dateFormat);
     const data = {
       "header": {
           "DATA_TYPE": "3"
       },
       "dto": {
-        "PAY_ID": "00000111",
+        "PAY_ID": "0003133",
         "CARD_NUM": payinfo.cardNum,
         "PAY_TIME": date,
         "PAY_AMOUNT": payinfo.payAmount,
@@ -176,23 +232,80 @@ class PaymentTable extends React.Component {
     axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/InsertPaymentTransaction?action=SO', data).then(response => {
       console.log("post insert data: "+JSON.stringify(data));
       if (!('exception' in response)) {
-        alert('결제 내역이 추가되었습니다.');
+        message.success('결제 내역이 추가되었습니다.');
         setTimeout(() => {
-          this.setState({isAddPayDiagVisible: false});
-          this.loadData('admin');     // TODO:: Need to change from props
+          this.setState({isAddPayDiagVisible: false, requestInProgress: false});
+          this.loadData(id);
         }, 1000);
       } else {
-        alert.error('결제 내역을 추가하는 도중 오류가 발생하였습니다.');
+        message.error('결제 내역을 추가하는 도중 오류가 발생하였습니다.');
       }
-      this.setState({ loading: false, selectedRowKeys: [] })
+      this.setState({ loading: false, selectedRowKeys: [], requestInProgress: false})
     });
   }
 
-  deletePayInfo = () => {
-    const payIdList = this.state.deletePayIDs;
+  delPayInfo = () => {
+    this.setState({requestInProgress: true});
+
+    const payIDList = this.state.selectedPayID;
     const id = window.sessionStorage.getItem('id');
-    console.log('삭제할 payID: '+JSON.stringify(payIdList))
-    var reqList = [];
+    console.log('삭제할 payID: '+JSON.stringify(payIDList))
+    const totalCount = payIDList.length;
+    let finishedCount = 0;
+    let succeededCount = 0;
+
+    payIDList.forEach((pay_id) => {
+      
+      const reqOpt = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          header: {
+            DATA_TYPE: '3'
+          },
+          dto: {
+            PAY_ID: pay_id
+          }
+        })
+      };
+      console.log(reqOpt);
+      let response = fetch('http://192.1.4.246:14000/AB3-5/OJTWEB/DeletePaymentTransaction?action=SO', reqOpt)
+          .then(res => res.json());
+
+      response.then(
+        (responseJson) => {
+          
+          if (!('exception' in responseJson)) {
+            succeededCount++;
+            finishedCount++;
+          } else {
+            finishedCount++;
+            console.log(responseJson);
+          }
+
+          if (finishedCount == totalCount) {
+            if (succeededCount == totalCount) {
+              message.success('카드가 삭제되었습니다.');
+              this.loadData(id)
+              
+            } else {
+              message.error('카드를 삭제하는 도중 오류가 발생하였습니다.');
+            }
+            this.setState({ isDelPayDiagVisible: false, requestInProgress: false, selectedRowKeys: []})
+          }
+        },
+        () => {
+          
+          finishedCount++;
+          
+          if (finishedCount == totalCount) {
+            message.error('카드를 삭제하는 도중 오류가 발생하였습니다.');
+            this.setState({ isDelPayDiagVisible: false, requestInProgress: false});
+          }
+        }
+      );
+      
+    });
     // for (let i = 0; i < payIdList.length; i++) {
     //   const data = {
     //     "header": {
@@ -218,6 +331,33 @@ class PaymentTable extends React.Component {
 
   }
 
+  createConfirmModalForm = (formId, titleText, confirmText, visibleState, hideFunc, submitFunc) => {
+
+    const { requestInProgress } = this.state;
+
+    return (
+        <Modal title={titleText} visible={visibleState}
+      onCancel={hideFunc}
+      destroyOnClose={true}
+      footer={[
+          <Button type="default" onClick={hideFunc}>
+          취소
+        </Button>,
+          <Button form={formId} type="primary"
+        key="submit" htmlType="submit" loading={requestInProgress}>
+          확인
+        </Button>
+        ]}
+        >
+        <Form id={formId} onFinish={submitFunc}>
+        
+      {confirmText}
+        
+        </Form>
+        </Modal>
+    );
+  }
+
   onSelectChange = selectedRowKeys => {
     // console.log('selectedRowKeys changed: ', selectedRowKeys);
     const data = this.state.payment_data;
@@ -227,7 +367,7 @@ class PaymentTable extends React.Component {
       payIdList.push(data[selectedRowKeys[i]].pay_id)
     }
     // console.log('payIdList: '+JSON.stringify(payIdList));
-    this.setState({ deletePayIDs: payIdList});
+    this.setState({ selectedPayID: payIdList});
   };
 
   onChange = (e) => {
@@ -236,41 +376,53 @@ class PaymentTable extends React.Component {
     });
   }
 
-  componentDidMount = (id) => {
-    this.loadData(this.props.userid);
+  componentDidMount = () => {
+    const id = window.sessionStorage.getItem('id');
+    this.loadData(id);
+    this.loadCardList(id);
   }
 
   render() {
-    const { loading, selectedRowKeys, card_num, isAddPayDiagVisible } = this.state;
+    const { loading, isDelPayDiagVisible, cardList, selectedRowKeys, card_num, isAddPayDiagVisible } = this.state;
     const rowSelection = {
       selectedRowKeys,
       onChange: this.onSelectChange,
     };
     const hasSelected = selectedRowKeys.length > 0;
     const data = this.state.payment_data;
+    // console.log(cardList);
+    var options = cardList.map(({key, name}) =><Option key={key} value={name}>{name}</Option>);
+    console.log(options)
     // console.log(data);
     // console.log('render data source: '+JSON.stringify(data));
     return (
       <div>
         <div style={{ marginTop: 10, marginBottom: 10, display: 'flex'}}>
-        <Search value={card_num} placeholder="카드번호" onSearch={this.onSearch} onChange={this.onChange} style={{ width: 200 }} />
         <RangePicker
           defaultValue={this.state.range}
           format={dateFormat}
           onChange={(value, dateString) => this.setState({ range: value })}
+          style={{ marginRight: '2px' }}
         />
-        <Button style={{ float: 'left', margin: '0 2px'  }} onClick={this.showAddPayDiag} >
-          결제
+        <Search value={card_num} placeholder="카드번호" onSearch={this.onSearch} onChange={this.onChange} style={{ width: 200 }} />
+        <Button style={{ marginLeft: 'auto'  }} onClick={this.showAddPayDiag} >
+          추가
         </Button>
-        <Modal title="결제내역 추가" visible={isAddPayDiagVisible}
+        <Modal title="결제" visible={isAddPayDiagVisible}
           onCancel={this.hideAddPayDiag}
           okText='추가' cancelText='취소'
           destroyOnClose={true}
-          footer={[
-          <Button form="addPayForm" type="primary"
-            key="submit" htmlType="submit">
-            결제 확인
-          </Button>
+          footer={[ <div>
+            <Button form="addPayForm" type="primary"
+              key="submit" htmlType="submit">
+              확인
+            </Button>
+            <Button form="addPayForm" type="secondary"
+              onClick={this.hideAddPayDiag}>
+              취소
+            </Button>
+          </div>
+
           ]}
         >
         <Form id="addPayForm" onFinish={this.addPayInfo}
@@ -283,7 +435,15 @@ class PaymentTable extends React.Component {
                 message: '필수 입력 항목입니다.',
               },
             ]}>
-            <Input/>
+            <Select
+              showSearch
+              style={{ width: 150 }}
+              placeholder="카드목록"
+              onChange={this.onCardChange}
+              onSearch={this.onCardSearch}>
+            {options}
+            </Select>
+
           </Form.Item>
         
           <Form.Item name='payAmount' label='결제금액'
@@ -332,9 +492,14 @@ class PaymentTable extends React.Component {
 
         </Form>
         </Modal>
-        <Button danger style={{ float: 'left', margin: '0 2px', marginRight: 10  }} onClick={this.deletePayInfo} disabled={!hasSelected} >
-          삭제
+        <Button danger style={{ float: 'right', margin: '0 2px'  }} onClick={this.showDelPayDiag} disabled={!hasSelected}>
+        삭제
         </Button>
+          {this.createConfirmModalForm("delForm", "결제내역 삭제",
+                                   "선택된 결제 내역을 모두 삭제하시겠습니까?",
+                                   isDelPayDiagVisible,
+                                   this.hideDelPayDiag,
+                                   this.delPayInfo)}
         </div>
         <Table rowSelection={rowSelection} columns={columns} dataSource={data} />
       </div>
@@ -379,9 +544,6 @@ class SiderDemo extends React.Component {
               <Menu.Item key="4"><Link to="/userinfo/pw">비밀번호 변경</Link></Menu.Item>
               <Menu.Item key="5"><Link to="/userinfo/change">회원정보 수정</Link></Menu.Item>
             </SubMenu>
-            <Menu.Item key="6" icon={<FileOutlined />}>
-              <Link to="/file">파일</Link>
-            </Menu.Item>
           </Menu>
         </Sider>
         <Layout className="site-layout">
