@@ -777,6 +777,12 @@ class SiderDemo extends React.Component {
     this.setState({ collapsed });
   };
 
+  handleClick(){
+    window.location.href = "http://localhost:3000";
+    window.sessionStorage.clear();
+    window.location.reload();
+  }
+  
   render() {
     const { collapsed } = this.state;
     return (
@@ -803,7 +809,11 @@ class SiderDemo extends React.Component {
         </Menu>
         </Sider>
         <Layout className="site-layout">
-        <Header className="site-layout-background" style={{ padding: 0 }} />
+        <Header className="site-layout-background" style={{ padding: 0 }}>
+            <Button onClick={this.handleClick} style={{ float: 'right', margin: 15}}>
+              Logout
+            </Button>
+          </Header>
         <Content style={{ margin: '0 16px' }}>
         <CardTable/>
         </Content>

@@ -130,15 +130,11 @@ const RegistrationForm = () => {
   );
 
   return (
-    <Form style={{margin: 'auto', maxWidth: '25%'}}
+    <Form style={{margin: 'auto', maxWidth: '40%', paddingRight: '10%'}}
       {...formItemLayout}
       form={form}
       name="register"
       onFinish={onFinish}
-      initialValues={{
-        residence: ['국내', '서울', '강남구'],
-        prefix: '82',
-      }}
       scrollToFirstError
     >
       <Form.Item
@@ -166,7 +162,7 @@ const RegistrationForm = () => {
       </Form.Item>
 
       <Form.Item
-        name="phone"
+        name="ceo_nm"
         label="대표자 이름"
       >
         <Input/>
@@ -198,27 +194,15 @@ const RegistrationForm = () => {
       </Form.Item>
 
       <Form.Item
-        name="phone"
+        name="birth"
         label="생년월일"
       >
         <Input/>
       </Form.Item>
 
-      <Form.Item
-        name="agreement"
-        valuePropName="checked"
-        rules={[
-          {
-            validator: (_, value) =>
-              value ? Promise.resolve() : Promise.reject('Should accept agreement'),
-          },
-        ]}
-        {...tailFormItemLayout}
-      >
-      </Form.Item>
       <Form.Item {...tailFormItemLayout}>
         <Button type="primary" htmlType="submit">
-          변경
+          수정
         </Button>
       </Form.Item>
     </Form>
@@ -234,6 +218,12 @@ class SiderDemo extends React.Component {
     console.log(collapsed);
     this.setState({ collapsed });
   };
+  
+  handleClick(){
+    window.location.href = "http://localhost:3000";
+    window.sessionStorage.clear();
+    window.location.reload();
+  }
 
   render() {
     const { collapsed } = this.state;
@@ -261,7 +251,11 @@ class SiderDemo extends React.Component {
           </Menu>
         </Sider>
         <Layout className="site-layout">
-          <Header className="site-layout-background" style={{ padding: 0 }} />
+          <Header className="site-layout-background" style={{ padding: 0 }}>
+            <Button onClick={this.handleClick} style={{ float: 'right', margin: 15}}>
+              Logout
+            </Button>
+          </Header>
           <Content style={{ margin: '150px' }}>
               <RegistrationForm />
           </Content>

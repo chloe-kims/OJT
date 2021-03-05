@@ -1,16 +1,40 @@
-import React from 'react';
+import React, { useState } from 'react';
 import tmax from '../tmax.gif';
 import 'antd/dist/antd.css';
 import '../App.css';
 import { Form, Input, Button, Checkbox } from 'antd';
 import { UserOutlined, LockOutlined } from '@ant-design/icons';
-import { Link } from 'react-router-dom';
+import { Link, Redirect } from 'react-router-dom';
 
 
-const NormalLoginForm = () => {
+function NormalLoginForm ({authenticated, login, location}) {
+  // const [id, setId] = useState('');
+  // const [password, setPassword] = useState('');
+
+  // const handleClick = () => {
+  //   try{
+  //     login({ id, password })
+  //   } catch (e) {
+  //     alert('로그인에 실패하였습니다.')
+  //     setId('')
+  //     setPassword('')
+  //   }
+  // }
+
   const onFinish = (values) => {
-    console.log('Received values of form: ', values);
+    // console.log('Received values of form: ', values);
+    let id = values.id;
+    let password = values.password;
+    try{
+      login({ id, password })
+    } catch (e) {
+      alert('로그인에 실패하였습니다.')
+
+    }
   };
+
+  const { from } = location.state || { from: { pathname: "/main" } }
+  if (authenticated) return <Redirect to={from} />
 
   return (
     <Form style={{margin: 'auto', maxWidth: '20%'}}
@@ -22,7 +46,7 @@ const NormalLoginForm = () => {
       onFinish={onFinish}
     >
       <Form.Item
-        name="username"
+        name="id"
         rules={[
           {
             required: true,
@@ -30,7 +54,10 @@ const NormalLoginForm = () => {
           },
         ]}
       >
-        <Input prefix={<UserOutlined className="site-form-item-icon" />} placeholder="Username" />
+        <Input 
+          type='text'
+          prefix={<UserOutlined className="site-form-item-icon" />}
+          placeholder="Username" />
       </Form.Item>
       <Form.Item
         name="password"
@@ -42,7 +69,6 @@ const NormalLoginForm = () => {
         ]}
       >
         <Input
-          prefix={<LockOutlined className="site-form-item-icon" />}
           type="password"
           placeholder="Password"
         />
@@ -53,13 +79,13 @@ const NormalLoginForm = () => {
         </Form.Item>
 
         <a className="login-form-forgot" href="">
-          Forgot password
+          Forgot password?
         </a>
       </Form.Item>
 
       <Form.Item>
         <Button style={{ margin: '10px' }} type="primary" htmlType="submit" className="login-form-button">
-          <Link to='/main'>Log in</Link>
+          Log in
         </Button>
         <br/>
         Or <Link to='/sign'>register now!</Link>
@@ -68,16 +94,14 @@ const NormalLoginForm = () => {
   );
 };
 
-function Login({ location, history } ) {
-  console.log(history);
-  console.log(location);
+function Login({authenticated, login, location}) {
     return (
       <div className="App">
         <header className="App-header">
-          <a href="http://localhost:3000">
+          <a href="http://localhost:3000" style={{ display: 'inline-block' }}>
             <img src={tmax} className="App-logo" alt="logo" />
           </a>
-          <NormalLoginForm/>
+          <NormalLoginForm authenticated={authenticated} login={login} location={location}/>
         </header>
       </div>
     );

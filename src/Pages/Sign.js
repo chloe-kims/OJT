@@ -1,8 +1,10 @@
 import '../App.css';
+import axios from 'axios';
 import tmax from '../tmax.gif';
 import React, { useState } from 'react';
 import DaumPostcode from "react-daum-postcode";
 import 'antd/dist/antd.css';
+import crypto from 'crypto';
 
 import {
   Form,
@@ -49,7 +51,9 @@ const tailFormItemLayout = {
   },
 };
 
-const Postcode = () => {
+const Postcode = (props) => {
+  // const [fullAddress, setFullAddress] = useState('');
+
   const handleComplete = (data) => {
     let fullAddress = data.address;
     let extraAddress = ''; 
@@ -65,6 +69,7 @@ const Postcode = () => {
     }
 
     console.log(fullAddress);  // e.g. '서울 성동구 왕십리로2길 20 (성수동1가)'
+    props.changeAddress(fullAddress);
   }
 
   return (
@@ -74,8 +79,9 @@ const Postcode = () => {
   );
 }
 
-const ModalContainer = () => {
+const ModalContainer = (props) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
+  const [address, setAddress] = useState('');
 
   const showModal = () => {
     setIsModalVisible(true);
@@ -89,13 +95,18 @@ const ModalContainer = () => {
     setIsModalVisible(false);
   };
 
+  const changeAddress = (e) => {
+    setAddress(e);
+    props.changeAddr(e);
+  }
+
   return (
     <>
       <Space direction="vertical" onClick={showModal} style={{ width: '100%' }}>
-        <Search placeholder="우편번호 검색" />
+        <Search placeholder={address} />
       </Space>
       <Modal visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
-        <Postcode/>
+        <Postcode changeAddress={e => changeAddress(e)} />
       </Modal>
     </>
   );
@@ -103,10 +114,43 @@ const ModalContainer = () => {
 
 const RegistrationForm = () => {
   const [form] = Form.useForm();
+  const [addr, setAddr] = useState('');
 
   const onFinish = (values) => {
-    console.log('Received values of form: ', values);
+    // console.log('Received values of form: ', values);
+    // console.log({addr});
+    let big_addr = JSON.stringify({addr}).slice(9, -2);
+    let date = new Date();
+    const pw = crypto.createHash('sha512').update(values.password).digest('base64');
+    const data = {
+      "header": {
+          "DATA_TYPE": "3"
+      },
+      "dto": {
+        "USER_ID": values.id,
+        "USER_PW": pw,
+        "COMP_NM": values.comp_nm,
+        "COMP_ADDR": big_addr+' '+values.detail_address,
+        "COMP_CONTACT": values.ceo_phone,
+        "COMP_EMAIL": values.email,
+        "COMP_NUM": values.comp_reg,
+        "COMP_CEO_NM": values.ceo_nm,
+        "COMP_CEO_BIRTH": values.birth,
+        "LAST_LOGIN": '2021-03-05 02:05:01'
+      }
+    }
+    console.log(data);
+    axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/InsertUserAccount?action=SO', data).then(response => {
+      alert('회원가입이 완료되었습니다.')
+
+    }).catch(error => {
+      alert('회원가입에 실패하였습니다. 잠시후 다시 시도해주세요.')
+    });
   };
+
+  const changeAddr = (e) => {
+    setAddr(e);
+  }
 
   const prefixSelector = (
     <Form.Item name="prefix" noStyle>
@@ -122,15 +166,11 @@ const RegistrationForm = () => {
   );
 
   return (
-    <Form style={{margin: 'auto', maxWidth: '30%'}}
+    <Form style={{ margin: 'auto', maxWidth: '35%', paddingRight: '60px' }}
       {...formItemLayout}
       form={form}
       name="register"
       onFinish={onFinish}
-      initialValues={{
-        residence: ['국내', '서울', '강남구'],
-        prefix: '82',
-      }}
       scrollToFirstError
     >
       <Form.Item
@@ -222,7 +262,14 @@ const RegistrationForm = () => {
         name="address"
         label="주소"
       >
-        <ModalContainer/>
+        <ModalContainer changeAddr={e => changeAddr(e)}/>
+      </Form.Item>
+
+      <Form.Item
+        name="detail_address"
+        label="상세 주소"
+      >
+        <Input />
       </Form.Item>
 
       <Form.Item
@@ -292,7 +339,7 @@ function Sign() {
     return (
       <div className="App">
         <header className="App-header">
-          <a href="http://localhost:3000">
+          <a href="http://localhost:3000" style={{ display: 'inline-block' }}>
             <img src={tmax} className="App-logo" alt="logo" />
           </a>
           <RegistrationForm/>

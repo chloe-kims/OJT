@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb } from 'antd';
+import { Layout, Menu, Breadcrumb, Button } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -20,16 +20,25 @@ class SiderDemo extends React.Component {
   };
 
   onCollapse = collapsed => {
-    console.log(collapsed);
     this.setState({ collapsed });
   };
 
+  handleClick(){
+    window.location.href = "http://localhost:3000";
+    window.sessionStorage.clear();
+    window.location.reload();
+  }
+  
   render() {
     const { collapsed } = this.state;
+    const temp = window.sessionStorage.getItem('id');
+    var login = '';
+    if(this.props.lastlogin != null) login = this.props.lastlogin.slice(0,19);
+    // console.log(this.props.lastlogin)
+    // if(this.props.lastlogin.length != 0) login = this.props.lastlogin.slice(0, 19)
     return (
       <Layout style={{ minHeight: '100vh' }}>
         <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
-          <div className="logo" />
           <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
             <Menu.Item key="1" icon={<TeamOutlined />}>
               <Link to="/main">홈</Link>
@@ -50,15 +59,19 @@ class SiderDemo extends React.Component {
           </Menu>
         </Sider>
         <Layout className="site-layout">
-          <Header className="site-layout-background" style={{ padding: 0 }} />
+          <Header className="site-layout-background" style={{ padding: 0 }}>
+            <Button onClick={this.handleClick} style={{ float: 'right', margin: 15}}>
+              Logout
+            </Button>
+          </Header>
           <Content style={{ margin: '0 16px' }}>
             <Breadcrumb style={{ margin: '16px 0' }}>
               <Breadcrumb.Item>Admin</Breadcrumb.Item>
               <Breadcrumb.Item>User</Breadcrumb.Item>
             </Breadcrumb>
             <div className="site-layout-background" style={{ padding: 24, minHeight: 360 }}>
-              Last Login: [DATE]
-              <br/>[USER]님 어서오세요.
+              마지막 접속: {login} <br/>
+              {temp}님 어서오세요.
             </div>
           </Content>
         </Layout>
@@ -67,11 +80,15 @@ class SiderDemo extends React.Component {
   }
 }
 
-function Main() {
+function Main({ userid, lastlogin }) {
+  const userID = userid;
+  const lastLogin = lastlogin;
   return (
-    <SiderDemo />
+    <SiderDemo userid={userID} lastlogin={lastLogin} />
   );
 }
+
+
 
 export default Main;
 

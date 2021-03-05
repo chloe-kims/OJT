@@ -10,6 +10,7 @@ import {
   TeamOutlined,
   UserOutlined,
 } from '@ant-design/icons';
+import axios from 'axios';
 
 const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
@@ -17,6 +18,8 @@ const { SubMenu } = Menu;
 const FormLayoutDemo = () => {
   const [form] = Form.useForm();
   const [formLayout, setFormLayout] = useState('horizontal');
+  const [oldpw, setOldpw] = useState('admin');
+  const [newpw, setNewpw] = useState('admin123');
 
   const onFormLayoutChange = ({ layout }) => {
     setFormLayout(layout);
@@ -42,9 +45,54 @@ const FormLayoutDemo = () => {
           },
         }
       : null;
+
+
+  const updatePw = () => {
+    const id = window.sessionStorage.getItem('id');
+    const old_data = {
+      "header": {
+          "DATA_TYPE": "3"
+      },
+      "dto": {
+          "USER_ID": id
+      }
+    }
+
+    axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/ReadUserAccount?action=SO', old_data).then(response => {
+      console.log('old post data: '+JSON.stringify(old_data))
+      // console.log(response)
+      const id = window.sessionStorage.getItem('id');
+      const p = response.data.dto.USER_PW;
+      const n = response.data.dto.COMP_NM;
+      const new_data = {
+        "header": {
+            "DATA_TYPE": "3"
+        },
+        "dto": {
+            "USER_ID": id,
+            "USER_PW": newpw,
+            "COMP_NM": n        // TODO:: 비밀번호 변경용 SO 하나 더 만들기, 나머지가 null로 들어가니까 다 비워지게되어버림,,
+        }
+      }
+      console.log(p, oldpw, newpw)
+      if(oldpw === p){
+        console.log('auth true!')
+        axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/UpdateUserAccount?action=SO', new_data).then(response => {
+          console.log('new post data: '+JSON.stringify(new_data))
+          console.log('update')
+        }).catch(error => {
+          alert('비밀번호 변경에 실패하였습니다.')
+        });
+      }
+      // alert('비밀번호를 변경하였습니다.')
+    }).catch(error => {
+      alert('잘못된 비밀번호입니다.')
+    });
+  }
+
   return (
     <>
-      <Form style = {{width: '40vw', margin: 'auto'}}
+      <Form style = {{margin: 'auto', maxWidth: '50%', paddingRight: '30px'}}
         {...formItemLayout}
         layout={formLayout}
         form={form}
@@ -60,7 +108,7 @@ const FormLayoutDemo = () => {
           <Input />
         </Form.Item>
         <Form.Item {...buttonItemLayout}>
-          <Button type="primary">변경</Button>
+          <Button type="primary" onClick={updatePw}>변경</Button>
         </Form.Item>
       </Form>
     </>
@@ -77,6 +125,12 @@ class SiderDemo extends React.Component {
     this.setState({ collapsed });
   };
 
+  handleClick(){
+    window.location.href = "http://localhost:3000";
+    window.sessionStorage.clear();
+    window.location.reload();
+  }
+  
   render() {
     const { collapsed } = this.state;
     return (
@@ -103,7 +157,11 @@ class SiderDemo extends React.Component {
           </Menu>
         </Sider>
         <Layout className="site-layout">
-          <Header className="site-layout-background" style={{ padding: 0 }} />
+          <Header className="site-layout-background" style={{ padding: 0 }}>
+            <Button onClick={this.handleClick} style={{ float: 'right', margin: 15}}>
+              Logout
+            </Button>
+          </Header>
           <Content style={{ margin: '150px' }}>
             <FormLayoutDemo />
           </Content>
