@@ -5,7 +5,7 @@ import 'antd/dist/antd.css';
 import {
   Layout, Menu, Table, Button, Input,
   Pagination, Modal, Form, Radio, DatePicker,
-  Select, message } from 'antd';
+  Select, message, Space } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -84,7 +84,8 @@ class CardTable extends React.Component {
     selectedCardData: [],
     maxDataCount: -1,
     pageSize: pageSizeDefault,
-    searchString: null,
+    pageIdx: 1,
+    searchString: "",
     isAddCardDiagVisible: false,
     isModCardDiagVisible: false,
     isDelCardDiagVisible: false,
@@ -100,8 +101,8 @@ class CardTable extends React.Component {
     //console.log(selectedRowKeys);
   };
 
-  onPageChange = (page, pageSize) => {
-    this.setState({ pageSize: pageSize });
+  setPageStates = (page, pageSize) => {
+    this.setState({ pageSize: pageSize, pageIdx: page });
   }
 
   
@@ -133,16 +134,13 @@ class CardTable extends React.Component {
         // received data successfully
         if ('dto' in responseJson && 'STR_VAL' in responseJson.dto) {
           
-          // map data from json
-          let mappedData = responseJson.dto.STR_VAL.map((cardco, idx) => ({
-            key: idx,
-            value: cardco.STR_VAL
-          }));
-          
-          // compose dropdown menu
-          newState.cardcoList = mappedData.map((cardco) =>
-                                               <Option value={cardco.value}>{cardco.value}</Option>
-                                              );
+          // map data from json & compose dropdown menu
+          newState.cardcoList = responseJson.dto.STR_VAL.map(
+            (obj, idx) =>
+              <Option key={idx} value={obj.STR_VAL}>
+              {obj.STR_VAL}
+            </Option>
+          );
         }
 
         // no data received
@@ -176,16 +174,13 @@ class CardTable extends React.Component {
         // received data successfully
         if ('dto' in responseJson && 'STR_VAL' in responseJson.dto) {
 
-          // map data from json
-          let mappedData = responseJson.dto.STR_VAL.map((bank, idx) => ({
-            key: idx,
-            value: bank.STR_VAL
-          }));
-          
-          // compose dropdown menu
-          newState.bankList = mappedData.map((bank) =>
-                                             <Option value={bank.value}>{bank.value}</Option>
-                                            );
+          // map data from json & compose dropdown menu
+          newState.bankList = responseJson.dto.STR_VAL.map(
+            (obj, idx) =>
+              <Option key={idx} value={obj.STR_VAL}>
+              {obj.STR_VAL}
+            </Option>
+          );
         }
         
         // no data received
@@ -225,15 +220,11 @@ class CardTable extends React.Component {
     // if filters has input, then use searchString from filter
     // as searchString from state is not updated yet
     if (filters != null) {
-      if (filters.cardName != null && filters.cardName[0] != null) {
+      if (filters.cardName != null) {
         searchCardName = filters.cardName[0];
-      } else {
-        searchCardName = null;
       }
-      if (filters.cardNum != null && filters.cardNum[0] != null) {
+      if (filters.cardNum != null) {
         searchCardNum = filters.cardNum[0];
-      } else {
-        searchCardNum = null;
       }
     }
     
@@ -280,9 +271,11 @@ class CardTable extends React.Component {
             cardStatus: cardinfo.CARD_STATUS
           }));
           newState.cardData = mappedCardData;
+          newState.pageIdx = pagination.current;
 
           if (!(pagination.current > 0)) {
             newState.maxDataCount = responseJson.dto.CardInfo[0].REQ_PAGEIDX;
+            newState.pageIdx = 1;
           }
 
         }
@@ -615,7 +608,6 @@ class CardTable extends React.Component {
       pageSize,
       selectedCardData
     } = this.state;
-    console.log(selectedCardData);
     
     this.setState({requestInProgress: true});
 
@@ -650,7 +642,7 @@ class CardTable extends React.Component {
             finishedCount++;
           } else {
             finishedCount++;
-            console.log(responseJson);
+            //console.log(responseJson);
           }
 
           if (finishedCount == totalCount) {
@@ -685,7 +677,11 @@ class CardTable extends React.Component {
   // onSearch: set search string before fetching data
   onSearch = (searchStringInput) => {
     const { pageSize } = this.state;
-    
+
+    if (!searchStringInput) {
+      searchStringInput = null;
+    } 
+
     this.setState({ searchString: searchStringInput });
     this.fetchCardData({pageSize: pageSize, current: -1},
                        {cardName: [searchStringInput], cardNum: [searchStringInput]});
@@ -706,7 +702,8 @@ class CardTable extends React.Component {
   render() {
     
     const {
-      loading, selectedRowKeys, cardData, selectedCardData, maxDataCount,
+      loading, selectedRowKeys, selectedCardData,
+      cardData, pageSize, pageIdx, maxDataCount,
       isAddCardDiagVisible, isModCardDiagVisible, isDelCardDiagVisible,
       requestInProgress,
       cardcoList, bankList,
@@ -716,18 +713,29 @@ class CardTable extends React.Component {
       onChange: this.onSelectChange,
     };
     const pagination = {
-      defaultPageSize: pageSizeDefault,
+      defaultPageSize: pageSize,
+      current: pageIdx,
       total: maxDataCount,
-      onChange: this.onPageChange
+      onChange: this.setPageStates
     }
     const itemSelected = selectedRowKeys.length > 0;
     const oneItemSelected = selectedRowKeys.length == 1;
     
     return (
         <div>
-        <div style={{ marginTop: 10, marginBottom: 10, display: 'flex'}}>
+        <div style={{ marginTop: 10, display: 'inline-block', width: '100%' }}>
+
+
+      
+        <Space align='start' style={{ float: 'left' }}>
         <Search placeholder="카드명 또는 카드번호" onSearch={this.onSearch} style={{ width: 200 }} />
-        <Button style={{ float: 'left', margin: '0 2px'  }} onClick={this.showAddCardDiag} >
+        </Space>
+
+
+      
+        <div style={{ float: 'right' }}>
+        <Button onClick={this.showAddCardDiag}
+        style={{ marginRight: 8 }}>
         추가
       </Button>
         
@@ -737,7 +745,8 @@ class CardTable extends React.Component {
                                     this.setCardInfo,
                                     null)}
       
-        <Button style={{ float: 'left', margin: '0 2px'  }} onClick={this.showModCardDiag} disabled={!oneItemSelected} >
+        <Button onClick={this.showModCardDiag} disabled={!oneItemSelected}
+        style={{ marginRight: 8 }}>
         수정
       </Button>
         
@@ -748,7 +757,7 @@ class CardTable extends React.Component {
                                     selectedCardData,
                                     {cardNum: true})}
       
-        <Button danger style={{ float: 'left', margin: '0 2px'  }} onClick={this.showDelCardDiag} disabled={!itemSelected} >
+        <Button danger onClick={this.showDelCardDiag} disabled={!itemSelected} >
         삭제
       </Button>
 
@@ -760,7 +769,10 @@ class CardTable extends React.Component {
                                    this.delCardInfo)}
 
       
-        </div>
+      </div>
+
+      
+      </div>
         <Table rowSelection={rowSelection} columns={columns} dataSource={cardData} onChange={this.fetchCardData} pagination={pagination} loading={loading} />
         </div>
     );
