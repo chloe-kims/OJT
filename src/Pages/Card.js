@@ -89,7 +89,7 @@ class CardTable extends React.Component {
     isAddCardDiagVisible: false,
     isModCardDiagVisible: false,
     isDelCardDiagVisible: false,
-    requestInProgress: false,
+    requestInProgress: false
   };
 
   start = () => {
@@ -390,14 +390,13 @@ class CardTable extends React.Component {
   hideDelCardDiag = () => {
     this.setState({ isDelCardDiagVisible: false });
   };
-  
 
   // createCardinfoModalForm: returns add/mod cardinfo modal form, which can be inserted in render()
   createCardinfoModalForm = (formId, titleText, submitText, cancelText, visibleState, hideFunc, submitFunc, initValues, itemDisabledStates) => {
     
     const {
       requestInProgress,
-      cardcoList, bankList,
+      cardcoList, bankList
     } = this.state;
     
     if (initValues == null) {
@@ -452,10 +451,22 @@ class CardTable extends React.Component {
           {
             required: true,
             message: '필수 입력 항목입니다.',
+          },
+          {
+            len: 16,
+            message: '유효한 카드번호가 아닙니다.',
           }
         ]}>
         <Input placeholder="'-' 없이 숫자만 입력"
-      disabled={itemDisabledStates ? itemDisabledStates.cardNum : null} />
+      disabled={itemDisabledStates ? itemDisabledStates.cardNum : null}
+      onKeyPress={(e) => {
+        if ( (!(e.charCode >= 48 && e.charCode <= 57 && e.target.value.length < 16))
+             && e.charCode != 13 ) {
+          e.preventDefault();
+        }
+        console.log(e);
+      }}
+        />
         </Form.Item>
         
         <Form.Item name='bank' label='결제계좌은행명'
@@ -477,10 +488,22 @@ class CardTable extends React.Component {
             required: true,
             message: '필수 입력 항목입니다.',
           },
+          /*{
+            type: 'integer',
+            message: '유효한 계좌번호가 아닙니다.',
+          }*/
         ]}>
-        <Input placeholder="'-' 없이 숫자만 입력" 
-      disabled={itemDisabledStates ? itemDisabledStates.bankAccount : null} />
-        </Form.Item>
+        <Input placeholder="'-' 없이 숫자만 입력"
+      disabled={itemDisabledStates ? itemDisabledStates.bankAccount : null}
+      onKeyPress={(e) => {
+        if ( (!(e.charCode >= 48 && e.charCode <= 57))
+             && e.charCode != 13 ) {
+          e.preventDefault();
+        }
+        console.log(e);
+      }}
+      />
+      </Form.Item>
         
         <Form.Item name='cardExpirationDate' label='유효기간'
         rules={[
@@ -717,7 +740,7 @@ class CardTable extends React.Component {
       cardData, pageSize, pageIdx, maxDataCount,
       isAddCardDiagVisible, isModCardDiagVisible, isDelCardDiagVisible,
       requestInProgress,
-      cardcoList, bankList,
+      cardcoList, bankList
     } = this.state;
     const rowSelection = {
       selectedRowKeys,
