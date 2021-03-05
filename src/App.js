@@ -76,13 +76,13 @@ function App() {
       <Router>
         <Switch>
           <Route exact path='/' component={ Home } />
-          <Route path='/sign' component={ Sign } />
           <Route
             path='/login'
             render={props => (
               <Login authenticated={authenticated} login={login} {...props} />
             )}
           />
+          <Route path='/sign' component={ Sign } />
           <AuthRoute
           authenticated={authenticated}
           path='/main'
@@ -129,7 +129,6 @@ function App() {
 }
 
 export default App;
-
 
 {/* <AuthRoute authenticated={authenticated}
 path='/card'

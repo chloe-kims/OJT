@@ -548,6 +548,12 @@ class SiderDemo extends React.Component {
     this.setState({ collapsed });
   };
 
+  handleClick(){
+    window.location.href = "http://localhost:3000";
+    window.sessionStorage.clear();
+    window.location.reload();
+  }
+  
   render() {
     const { collapsed } = this.state;
     return (

@@ -28,6 +28,7 @@ class SiderDemo extends React.Component {
     window.sessionStorage.clear();
     window.location.reload();
   }
+  
   render() {
     const { collapsed } = this.state;
     const temp = window.sessionStorage.getItem('id');
