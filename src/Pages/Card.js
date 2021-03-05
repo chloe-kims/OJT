@@ -5,7 +5,7 @@ import 'antd/dist/antd.css';
 import {
   Layout, Menu, Table, Button, Input,
   Pagination, Modal, Form, Radio, DatePicker,
-  Select, message } from 'antd';
+  Select, message, Space } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -723,9 +723,19 @@ class CardTable extends React.Component {
     
     return (
         <div>
-        <div style={{ marginTop: 10, marginBottom: 10, display: 'flex'}}>
+        <div style={{ marginTop: 10, display: 'inline-block', width: '100%' }}>
+
+
+      
+        <Space align='start' style={{ float: 'left' }}>
         <Search placeholder="카드명 또는 카드번호" onSearch={this.onSearch} style={{ width: 200 }} />
-        <Button style={{ float: 'left', margin: '0 2px'  }} onClick={this.showAddCardDiag} >
+        </Space>
+
+
+      
+        <div style={{ float: 'right' }}>
+        <Button onClick={this.showAddCardDiag}
+        style={{ marginRight: 8 }}>
         추가
       </Button>
         
@@ -735,7 +745,8 @@ class CardTable extends React.Component {
                                     this.setCardInfo,
                                     null)}
       
-        <Button style={{ float: 'left', margin: '0 2px'  }} onClick={this.showModCardDiag} disabled={!oneItemSelected} >
+        <Button onClick={this.showModCardDiag} disabled={!oneItemSelected}
+        style={{ marginRight: 8 }}>
         수정
       </Button>
         
@@ -746,7 +757,7 @@ class CardTable extends React.Component {
                                     selectedCardData,
                                     {cardNum: true})}
       
-        <Button danger style={{ float: 'left', margin: '0 2px'  }} onClick={this.showDelCardDiag} disabled={!itemSelected} >
+        <Button danger onClick={this.showDelCardDiag} disabled={!itemSelected} >
         삭제
       </Button>
 
@@ -758,7 +769,10 @@ class CardTable extends React.Component {
                                    this.delCardInfo)}
 
       
-        </div>
+      </div>
+
+      
+      </div>
         <Table rowSelection={rowSelection} columns={columns} dataSource={cardData} onChange={this.fetchCardData} pagination={pagination} loading={loading} />
         </div>
     );
