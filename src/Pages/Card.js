@@ -2,7 +2,10 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Table, Button, Input, Pagination, Modal, Form, Radio, DatePicker, Select, message } from 'antd';
+import {
+  Layout, Menu, Table, Button, Input,
+  Pagination, Modal, Form, Radio, DatePicker,
+  Select, message } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -11,6 +14,7 @@ import {
   UserOutlined,
   DownOutlined,
 } from '@ant-design/icons';
+import moment from 'moment';
 
 const { Header, Content, Sider } = Layout;
 const { SubMenu } = Menu;
@@ -77,11 +81,13 @@ class CardTable extends React.Component {
     cardcoList: [],
     bankList: [],
     cardData: [],
+    selectedCardData: [],
     maxDataCount: -1,
     pageSize: pageSizeDefault,
     searchString: null,
     isAddCardDiagVisible: false,
     isModCardDiagVisible: false,
+    isDelCardDiagVisible: false,
     requestInProgress: false,
   };
 
@@ -91,13 +97,13 @@ class CardTable extends React.Component {
 
   onSelectChange = selectedRowKeys => {
     this.setState({ selectedRowKeys });
+    //console.log(selectedRowKeys);
   };
 
   onPageChange = (page, pageSize) => {
     this.setState({ pageSize: pageSize });
   }
 
-  
   
   //////////////////// data fetch ////////////////////
 
@@ -142,7 +148,7 @@ class CardTable extends React.Component {
         // no data received
         else {
           if ('exception' in responseJson) { 
-            message.error('서버와 연결할 수 없습니다.');
+            message.error('카드사 목록 요청이 실패하였습니다.');
           } else {
             message.error('카드사 목록이 존재하지 않습니다.');
           }
@@ -153,7 +159,7 @@ class CardTable extends React.Component {
       
       // connection fail
       () => {
-        message.error('서버와 연결할 수 없습니다.');
+        //message.error('서버와 연결할 수 없습니다.');
         this.setState({cardcoList: null});
       }
     );
@@ -185,7 +191,7 @@ class CardTable extends React.Component {
         // no data received
         else {
           if ('exception' in responseJson) { 
-            message.error('서버와 연결할 수 없습니다.');
+            message.error('은행 목록 요청이 실패하였습니다.');
           } else {
             message.error('은행 목록이 존재하지 않습니다.');
           }
@@ -195,7 +201,7 @@ class CardTable extends React.Component {
       
       // connection fail
       () => {
-        message.error('서버와 연결할 수 없습니다.');
+        //message.error('서버와 연결할 수 없습니다.');
         this.setState({bankList: null});
       }
     );
@@ -257,6 +263,8 @@ class CardTable extends React.Component {
 
         // received data successfully
         if ('dto' in responseJson && 'CardInfo' in responseJson.dto) {
+
+          newState.selectedRowKeys = [];
           
           let mappedCardData = responseJson.dto.CardInfo.map((cardinfo, idx) => ({
             key: idx,
@@ -297,24 +305,248 @@ class CardTable extends React.Component {
   }
 
 
-  
-  //////////////////// add card info ////////////////////
 
-  // showAddCardDiag: show modal
-  showAddCardDiag = () => {
-    this.setState({ isAddCardDiagVisible: true });
-  };
   
-  // hideAddCardDiag: hide modal
+  //////////////////// modal ////////////////////
+
+  
+  // showAddCardDiag: show add modal
+  showAddCardDiag = () => {
+    this.setState({
+      isModCardDiagVisible: false,
+      isDelCardDiagVisible: false,
+      isAddCardDiagVisible: true
+    });
+  };
+
+  
+  // hideAddCardDiag: hide add modal
   hideAddCardDiag = () => {
     this.setState({ isAddCardDiagVisible: false });
   };
+  
 
-  // addCardInfo: send insert request
-  addCardInfo = (cardinfo) => {
-    const { pageSize } = this.state;
+  // showModCardDiag: show mod modal
+  showModCardDiag = () => {
+
+    // set card data to show on mod modal
+    const {
+      selectedRowKeys,
+      cardData,
+      selectedCardData
+    } = this.state;
+
+    let targetData = cardData[selectedRowKeys[0]];
+    
+    this.setState({
+      isAddCardDiagVisible: false,
+      isDelCardDiagVisible: false,
+      isModCardDiagVisible: true,
+      selectedCardData: {
+        cardNum: targetData.cardNum,
+        cardName: targetData.cardName,
+        cardCompany: targetData.cardCompany,
+        bank: targetData.bank,
+        bankAccount: targetData.bankAccount,
+        cardExpirationDate: moment(targetData.cardExpirationDate, 'YYYY-MM'),
+        cardStatus: targetData.cardStatus
+      }
+    });
+  };
+
+  
+  // hideModCardDiag: hide mod modal
+  hideModCardDiag = () => {
+    this.setState({ isModCardDiagVisible: false });
+  };
+
+
+  // showDelCardDiag: show del modal
+  showDelCardDiag = () => {
+
+    // set card data to process on del modal
+    const {
+      selectedRowKeys,
+      cardData
+    } = this.state;
+
+    
+    let targetData = selectedRowKeys.map(selectedIdx => cardData[selectedIdx].cardNum);
+;
+    
+    this.setState({
+      isAddCardDiagVisible: false,
+      isModCardDiagVisible: false,
+      isDelCardDiagVisible: true,
+      selectedCardData: targetData
+    });
+  };
+
+  
+  // hideDelCardDiag: hide del modal
+  hideDelCardDiag = () => {
+    this.setState({ isDelCardDiagVisible: false });
+  };
+  
+
+  // createCardinfoModalForm: returns add/mod cardinfo modal form, which can be inserted in render()
+  createCardinfoModalForm = (formId, titleText, submitText, visibleState, hideFunc, submitFunc, initValues, itemDisabledStates) => {
+    
+    const {
+      requestInProgress,
+      cardcoList, bankList,
+    } = this.state;
+    
+    if (initValues == null) {
+      initValues = {cardStatus: '사용'};
+    }
+
+    return (
+        <Modal title={titleText} visible={visibleState}
+      onCancel={hideFunc}
+      destroyOnClose={true}
+      footer={[
+          <Button form={formId} type="primary"
+        key="submit" htmlType="submit" loading={requestInProgress}>
+          {submitText}
+        </Button>
+        ]}
+        >
+        <Form id={formId} onFinish={submitFunc}
+      initialValues={initValues}
+      {...modanFormLayout} >
+        
+        <Form.Item name='cardNum' label='카드번호'
+        rules={[
+          {
+            required: true,
+            message: '필수 입력 항목입니다.',
+          }
+        ]}>
+        <Input placeholder="'-' 없이 숫자만 입력"
+      disabled={itemDisabledStates ? itemDisabledStates.cardNum : null} />
+        </Form.Item>
+        
+        <Form.Item name='cardName' label='카드명'
+        rules={[
+          {
+            required: true,
+            message: '필수 입력 항목입니다.',
+          },
+        ]}>
+        <Input
+      disabled={itemDisabledStates ? itemDisabledStates.cardName : null} />
+        </Form.Item>
+        
+        <Form.Item name='cardCompany' label='카드사'
+        rules={[
+          {
+            required: true,
+            message: '필수 선택 항목입니다.',
+          },
+        ]}>
+        <Select placeholder='카드사 선택' onChange={this.onCardcoSelectClick}
+      disabled={itemDisabledStates ? itemDisabledStates.cardCompany : null} >
+        {cardcoList}
+        </Select>
+        </Form.Item>
+        
+        <Form.Item name='bank' label='결제계좌은행명'
+        rules={[
+          {
+            required: true,
+            message: '필수 선택 항목입니다.',
+          },
+        ]}>
+        <Select placeholder='은행 선택' onChange={this.onBankSelectClick}
+      disabled={itemDisabledStates ? itemDisabledStates.bank : null} >
+        {bankList}
+        </Select>
+        </Form.Item>
+        
+        <Form.Item name='bankAccount' label='결제계좌번호'
+        rules={[
+          {
+            required: true,
+            message: '필수 입력 항목입니다.',
+          },
+        ]}>
+        <Input placeholder="'-' 없이 숫자만 입력" 
+      disabled={itemDisabledStates ? itemDisabledStates.bankAccount : null} />
+        </Form.Item>
+        
+        <Form.Item name='cardExpirationDate' label='유효기간'
+        rules={[
+          {
+            required: true,
+            message: '필수 선택 항목입니다.',
+          },
+        ]}>
+        <DatePicker picker='month' placeholder='유효기간 선택'
+      disabled={itemDisabledStates ? itemDisabledStates.cardExpirationDate : null} />
+        </Form.Item>
+        
+        <Form.Item name='cardStatus' label='상태'
+        rules={[
+          {
+            required: true,
+            message: '필수 선택 항목입니다.',
+          },
+        ]}>
+        <Radio.Group value='cardStatus'
+      disabled={itemDisabledStates ? itemDisabledStates.cardStatus : null}>
+        <Radio.Button value='사용'>사용</Radio.Button>
+        <Radio.Button value='사용중지'>사용중지</Radio.Button>
+        </Radio.Group>
+        </Form.Item>
+        
+        </Form>
+        </Modal>
+    );
+  };
+
+  createConfirmModalForm = (formId, titleText, confirmText, visibleState, hideFunc, submitFunc) => {
+
+    const { requestInProgress } = this.state;
+
+    return (
+        <Modal title={titleText} visible={visibleState}
+      onCancel={hideFunc}
+      destroyOnClose={true}
+      footer={[
+          <Button type="default" onClick={hideFunc}>
+          취소
+        </Button>,
+          <Button form={formId} type="primary"
+        key="submit" htmlType="submit" loading={requestInProgress}>
+          확인
+        </Button>
+        ]}
+        >
+        <Form id={formId} onFinish={submitFunc}>
+        
+      {confirmText}
+        
+        </Form>
+        </Modal>
+    );
+  }
+  
+  
+  
+  //////////////////// add & mod & del card info ////////////////////
+  
+  // setCardInfo: send insert/update request
+  setCardInfo = (cardinfo) => {
+    
+    const {
+      pageSize,
+      isAddCardDiagVisible
+    } = this.state;
     
     this.setState({requestInProgress: true});
+    
+    const workName = isAddCardDiagVisible ? '추가' : '수정';
     
     var expirationDate = new Date(cardinfo.cardExpirationDate);
     // POST request
@@ -340,22 +572,28 @@ class CardTable extends React.Component {
     };
 
     // send request & set response data to state
-    let response = fetch(reqBaseUrl + 'InsertCardInfo?action=SO', reqOpt)
+    let response = fetch(reqBaseUrl +
+                         (isAddCardDiagVisible ?
+                          'InsertCardInfo' : 'UpdateCardInfo') + '?action=SO',
+                         reqOpt)
         .then(res => res.json());
 
     // response handling
     response.then(
       (responseJson) => {
         if (!('exception' in responseJson)) {
-          message.success('카드가 추가되었습니다.');
-          this.setState({requestInProgress: false});
+          message.success('카드가 ' + workName + '되었습니다.');
           setTimeout(() => {
-            this.setState({isAddCardDiagVisible: false});
+            this.setState({
+              isAddCardDiagVisible: false,
+              isModCardDiagVisible: false,
+              requestInProgress: false});
             this.fetchCardData({pageSize: pageSize, current: -1});
           }, 1000);
         } else {
-          message.error('카드를 추가하는 도중 오류가 발생하였습니다.');
+          message.error('카드를 ' + workName + '하는 도중 오류가 발생하였습니다.');
           this.setState({requestInProgress: false});
+          //console.log(responseJson);
         }
       },
       () => {
@@ -366,17 +604,75 @@ class CardTable extends React.Component {
   }
 
 
-  //////////////////// mod card info ////////////////////
+  // delCardInfo: send delete requests
+  delCardInfo = (cardinfo) => {
+    
+    const {
+      pageSize,
+      selectedCardData
+    } = this.state;
+    console.log(selectedCardData);
+    
+    this.setState({requestInProgress: true});
 
-  // showModCardDiag: show modal
-  showModCardDiag = () => {
-    this.setState({ isModCardDiagVisible: true });
-  };
-  
-  // hideModCardDiag: hide modal
-  hideModCardDiag = () => {
-    this.setState({ isModCardDiagVisible: false });
-  };
+    const totalCount = selectedCardData.length;
+    let finishedCount = 0;
+    let succeededCount = 0;
+
+    
+    selectedCardData.forEach((cardNum) => {
+      
+      const reqOpt = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          header: {
+            DATA_TYPE: 'J'
+          },
+          dto: {
+            CARD_NUM: cardNum
+          }
+        })
+      };
+      
+      let response = fetch(reqBaseUrl + 'DeleteCardInfo?action=SO', reqOpt)
+          .then(res => res.json());
+
+      response.then(
+        (responseJson) => {
+          
+          if (!('exception' in responseJson)) {
+            succeededCount++;
+            finishedCount++;
+          } else {
+            finishedCount++;
+            console.log(responseJson);
+          }
+
+          if (finishedCount == totalCount) {
+            if (succeededCount == totalCount) {
+              message.success('카드가 삭제되었습니다.');
+              this.fetchCardData({pageSize: pageSize, current: -1});
+            } else {
+              message.error('카드를 삭제하는 도중 오류가 발생하였습니다.');
+            }
+            this.setState({requestInProgress: false, isDelCardDiagVisible: false});
+          }
+          
+        },
+        () => {
+          
+          finishedCount++;
+          
+          if (finishedCount == totalCount) {
+            message.error('카드를 삭제하는 도중 오류가 발생하였습니다.');
+            this.setState({requestInProgress: false, isDelCardDiagVisible: false});
+          }
+        }
+      );
+    });
+    
+  }
 
   
 
@@ -406,8 +702,8 @@ class CardTable extends React.Component {
   render() {
     
     const {
-      loading, selectedRowKeys, cardData, maxDataCount,
-      isAddCardDiagVisible, isModCardDiagVisible,
+      loading, selectedRowKeys, cardData, selectedCardData, maxDataCount,
+      isAddCardDiagVisible, isModCardDiagVisible, isDelCardDiagVisible,
       requestInProgress,
       cardcoList, bankList,
     } = this.state;
@@ -422,7 +718,6 @@ class CardTable extends React.Component {
     }
     const itemSelected = selectedRowKeys.length > 0;
     const oneItemSelected = selectedRowKeys.length == 1;
-
     
     return (
         <div>
@@ -431,106 +726,36 @@ class CardTable extends React.Component {
         <Button style={{ float: 'left', margin: '0 2px'  }} onClick={this.showAddCardDiag} >
         추가
       </Button>
-
-      
-        <Modal title="카드 추가" visible={isAddCardDiagVisible}
-      onCancel={this.hideAddCardDiag}
-      okText='추가' cancelText='취소'
-      destroyOnClose={true}
-      footer={[
-          <Button form="addCardForm" type="primary"
-        key="submit" htmlType="submit" loading={requestInProgress}>
-          카드 추가
-        </Button>
-        ]}
-        >
-        <Form id="addCardForm" onFinish={this.addCardInfo}
-      initialValues={{cardStatus: '사용'}}
-      {...modanFormLayout} >
-        <Form.Item name='cardName' label='카드명'
-        rules={[
-          {
-            required: true,
-            message: '필수 입력 항목입니다.',
-          },
-        ]}>
-        <Input/>
-        </Form.Item>
-        <Form.Item name='cardCompany' label='카드사'
-        rules={[
-          {
-            required: true,
-            message: '필수 선택 항목입니다.',
-          },
-        ]}>
-        <Select placeholder='카드사 선택' onChange={this.onCardcoSelectClick}>
-        {cardcoList}
-        </Select>
-        </Form.Item>
-        <Form.Item name='cardNum' label='카드번호'
-        rules={[
-          {
-            required: true,
-            message: '필수 입력 항목입니다.',
-          },
-        ]}>
-        <Input placeholder="'-' 없이 숫자만 입력" />
-        </Form.Item>
-        <Form.Item name='bank' label='결제계좌은행명'
-        rules={[
-          {
-            required: true,
-            message: '필수 선택 항목입니다.',
-          },
-        ]}>
-        <Select placeholder='은행 선택' onChange={this.onBankSelectClick}>
-        {bankList}
-        </Select>
-        </Form.Item>
-        <Form.Item name='bankAccount' label='결제계좌번호'
-        rules={[
-          {
-            required: true,
-            message: '필수 입력 항목입니다.',
-          },
-        ]}>
-        <Input placeholder="'-' 없이 숫자만 입력" />
-        </Form.Item>
-        <Form.Item name='cardExpirationDate' label='유효기간'
-        rules={[
-          {
-            required: true,
-            message: '필수 선택 항목입니다.',
-          },
-        ]}>
-        <DatePicker picker='month' placeholder='유효기간 선택'/>
-        </Form.Item>
-        <Form.Item name='cardStatus' label='상태'
-        rules={[
-          {
-            required: true,
-            message: '필수 선택 항목입니다.',
-          },
-        ]}>
-        <Radio.Group value='cardStatus'>
-        <Radio.Button value='사용'>사용</Radio.Button>
-        <Radio.Button value='사용중지'>사용중지</Radio.Button>
-        </Radio.Group>
-        </Form.Item>
-        </Form>
-        </Modal>
-
-
+        
+      {this.createCardinfoModalForm("addForm", "카드 추가", "추가",
+                                    isAddCardDiagVisible,
+                                    this.hideAddCardDiag,
+                                    this.setCardInfo,
+                                    null)}
       
         <Button style={{ float: 'left', margin: '0 2px'  }} onClick={this.showModCardDiag} disabled={!oneItemSelected} >
         수정
       </Button>
-        <Modal title="카드 정보 수정" visible={isModCardDiagVisible} onOk={this.okModCardDiag} onCancel={this.cancelModCardDiag}>
-        <Form preserve={false} />
-        </Modal>
-        <Button danger style={{ float: 'left', margin: '0 2px'  }} onClick={this.start} disabled={!itemSelected} >
+        
+      {this.createCardinfoModalForm("modForm", "카드 수정", "수정",
+                                    isModCardDiagVisible,
+                                    this.hideModCardDiag,
+                                    this.setCardInfo,
+                                    selectedCardData,
+                                    {cardNum: true})}
+      
+        <Button danger style={{ float: 'left', margin: '0 2px'  }} onClick={this.showDelCardDiag} disabled={!itemSelected} >
         삭제
       </Button>
+
+
+      {this.createConfirmModalForm("delForm", "카드 삭제",
+                                   "선택된 카드를 모두 삭제하시겠습니까?",
+                                   isDelCardDiagVisible,
+                                   this.hideDelCardDiag,
+                                   this.delCardInfo)}
+
+      
         </div>
         <Table rowSelection={rowSelection} columns={columns} dataSource={cardData} onChange={this.fetchCardData} pagination={pagination} loading={loading} />
         </div>
@@ -544,7 +769,7 @@ class SiderDemo extends React.Component {
   };
 
   onCollapse = collapsed => {
-    console.log(collapsed);
+    //console.log(collapsed);
     this.setState({ collapsed });
   };
 
