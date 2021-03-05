@@ -28,7 +28,8 @@ export function onLogin ({ id, password }) {
             if (user != null){
                 const auth = (user.USER_PW === pw);
                 if(auth){
-                    window.sessionStorage.setItem('id', id);
+                    window.sessionStorage.setItem('id', user.USER_ID);
+                    window.sessionStorage.setItem('lastlogin', user.LAST_LOGIN);
                     resolve(user);
                 }else{
                     reject('not auth');

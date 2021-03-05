@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Breadcrumb } from 'antd';
+import { Layout, Menu, Breadcrumb, Button } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -23,6 +23,11 @@ class SiderDemo extends React.Component {
     this.setState({ collapsed });
   };
 
+  handleClick(){
+    window.location.href = "http://localhost:3000";
+    window.sessionStorage.clear();
+    window.location.reload();
+  }
   render() {
     const { collapsed } = this.state;
     const temp = window.sessionStorage.getItem('id');
@@ -33,7 +38,6 @@ class SiderDemo extends React.Component {
     return (
       <Layout style={{ minHeight: '100vh' }}>
         <Sider collapsible collapsed={collapsed} onCollapse={this.onCollapse}>
-          <div className="logo" />
           <Menu theme="dark" defaultSelectedKeys={['1']} mode="inline">
             <Menu.Item key="1" icon={<TeamOutlined />}>
               <Link to="/main">홈</Link>
@@ -54,7 +58,11 @@ class SiderDemo extends React.Component {
           </Menu>
         </Sider>
         <Layout className="site-layout">
-          <Header className="site-layout-background" style={{ padding: 0 }} />
+          <Header className="site-layout-background" style={{ padding: 0 }}>
+            <Button onClick={this.handleClick} style={{ float: 'right', margin: 15}}>
+              Logout
+            </Button>
+          </Header>
           <Content style={{ margin: '0 16px' }}>
             <Breadcrumb style={{ margin: '16px 0' }}>
               <Breadcrumb.Item>Admin</Breadcrumb.Item>
@@ -75,7 +83,7 @@ function Main({ userid, lastlogin }) {
   const userID = userid;
   const lastLogin = lastlogin;
   return (
-    <SiderDemo userid={userID} lastlogin={lastLogin}/>
+    <SiderDemo userid={userID} lastlogin={lastLogin} />
   );
 }
 

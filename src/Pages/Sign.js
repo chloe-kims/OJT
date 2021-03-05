@@ -136,7 +136,7 @@ const RegistrationForm = () => {
         "COMP_NUM": values.comp_reg,
         "COMP_CEO_NM": values.ceo_nm,
         "COMP_CEO_BIRTH": values.birth,
-        "LAST_LOGIN": '2021-02-23 02:05:01'
+        "LAST_LOGIN": '2021-03-05 02:05:01'
       }
     }
     console.log(data);

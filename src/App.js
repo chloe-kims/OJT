@@ -1,6 +1,7 @@
 import './App.css';
 import React, { useState, createRef } from 'react';
 import { BrowserRouter as Router, Route, Switch } from 'react-router-dom';
+import { Button } from 'antd';
 
 import { onLogin } from './auth';
 import AuthRoute from './AuthRoute';
@@ -48,8 +49,9 @@ const { Footer } = Layout;
 
 function App() {
   const [user, setUser] = useState();
-  const authenticated = (user != null);
-
+  const authenticated = window.sessionStorage.getItem('id') != null;
+  const id = window.sessionStorage.getItem('id');
+  const lastlogin = window.sessionStorage.getItem('lastlogin');
   // const login = ({ id, password }) => {
   //   const { data: userinfo, error, isLoading } = useAsync({
   //     promiseFn: onLogin
@@ -65,10 +67,9 @@ function App() {
     });
     // setUser(onLogin({ id, password }));
   }
-  // const logout = () => setUser(null);
+  const logout = () => setUser(null);
   // console.log('App has User: '+JSON.stringify(user));
-  // console.log(authenticated);
-
+  console.log(authenticated);
 
   return (
     <div className="App">
@@ -86,37 +87,37 @@ function App() {
           authenticated={authenticated}
           path='/main'
           render={props =>  (
-            <Main userid={user.USER_ID} lastlogin={user.LAST_LOGIN} />
+            <Main userid={id} lastlogin={lastlogin} logout={logout} />
           )}
           />
           <AuthRoute authenticated={authenticated}
           path='/card'
           render={props =>  (
-            <Card userid={user.USER_ID} />
+            <Card userid={id} />
           )}
           />
           <AuthRoute authenticated={authenticated}
           path='/payment'
           render={props =>  (
-            <Payment userid={user.USER_ID} />
+            <Payment userid={id} />
           )}
           />
           <AuthRoute authenticated={authenticated}
           path='/userinfo/pw'
           render={props =>  (
-            <UserInfoPw userid={user.USER_ID} />
+            <UserInfoPw userid={id} />
           )}
           />
           <AuthRoute authenticated={authenticated}
           path='/userinfo/change'
           render={props =>  (
-            <UserInfoChange userid={user.USER_ID} />
+            <UserInfoChange userid={id} />
           )}
           />
           <AuthRoute authenticated={authenticated}
           path='/file' 
           render={props =>  (
-            <File userid={user.USER_ID} />
+            <File userid={id} />
           )}
           /> 
           <Route path='/' component={ Deny } />
