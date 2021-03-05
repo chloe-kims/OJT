@@ -267,7 +267,7 @@ class CardTable extends React.Component {
             cardNum: cardinfo.CARD_NUM,
             bankAccount: cardinfo.BANK_ACC,
             bank: cardinfo.BANK_NM,
-            cardExpirationDate: cardinfo.CARD_EXPIRED,
+            cardExpirationDate: moment(new Date(cardinfo.CARD_EXPIRED)).format('MM/YY'),
             cardStatus: cardinfo.CARD_STATUS
           }));
           newState.cardData = mappedCardData;
@@ -344,7 +344,7 @@ class CardTable extends React.Component {
         cardCompany: targetData.cardCompany,
         bank: targetData.bank,
         bankAccount: targetData.bankAccount,
-        cardExpirationDate: moment(targetData.cardExpirationDate, 'YYYY-MM'),
+        cardExpirationDate: moment(targetData.cardExpirationDate, 'MM/YY'),
         cardStatus: targetData.cardStatus
       }
     });
@@ -482,7 +482,7 @@ class CardTable extends React.Component {
             message: '필수 선택 항목입니다.',
           },
         ]}>
-        <DatePicker picker='month' placeholder='유효기간 선택'
+        <DatePicker placeholder='유효기간 선택' picker='month' format='MM/YY'
       disabled={itemDisabledStates ? itemDisabledStates.cardExpirationDate : null} />
         </Form.Item>
         
