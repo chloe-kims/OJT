@@ -85,11 +85,11 @@ class CardTable extends React.Component {
     maxDataCount: -1,
     pageSize: pageSizeDefault,
     pageIdx: 1,
-    searchString: "",
+    searchString: null,
     isAddCardDiagVisible: false,
     isModCardDiagVisible: false,
     isDelCardDiagVisible: false,
-    requestInProgress: false,
+    requestInProgress: false
   };
 
   start = () => {
@@ -227,6 +227,13 @@ class CardTable extends React.Component {
         searchCardNum = filters.cardNum[0];
       }
     }
+
+    let errStrPrefix;
+    if (searchCardName == null) {
+      errStrPrefix = '회원 \'' + username + '\' 의 ';
+    } else {
+      errStrPrefix = '검색어 \'' + searchCardName + '\' 에 해당하는 '
+    }
     
     // POST request
     const reqOpt = {
@@ -245,7 +252,7 @@ class CardTable extends React.Component {
         }
       })
     };
-
+    
     // send request & get response
     let response = fetch(reqBaseUrl + 'ReadCardInfo?action=SO', reqOpt)
         .then(res => res.json());
@@ -256,7 +263,8 @@ class CardTable extends React.Component {
         let newState = {loading: false};
 
         // received data successfully
-        if ('dto' in responseJson && 'CardInfo' in responseJson.dto) {
+        if ('dto' in responseJson && 'CardInfo' in responseJson.dto
+            && responseJson.dto.CardInfo.length > 0) {
 
           newState.selectedRowKeys = [];
           
@@ -267,7 +275,7 @@ class CardTable extends React.Component {
             cardNum: cardinfo.CARD_NUM,
             bankAccount: cardinfo.BANK_ACC,
             bank: cardinfo.BANK_NM,
-            cardExpirationDate: cardinfo.CARD_EXPIRED,
+            cardExpirationDate: moment(new Date(cardinfo.CARD_EXPIRED)).format('MM/YY'),
             cardStatus: cardinfo.CARD_STATUS
           }));
           newState.cardData = mappedCardData;
@@ -277,7 +285,6 @@ class CardTable extends React.Component {
             newState.maxDataCount = responseJson.dto.CardInfo[0].REQ_PAGEIDX;
             newState.pageIdx = 1;
           }
-
         }
         
         // no data received
@@ -285,7 +292,7 @@ class CardTable extends React.Component {
           if ('exception' in responseJson) { 
             message.error('서버와 연결할 수 없습니다.');
           } else {
-            message.error('해당하는 카드가 존재하지 않습니다.');
+            message.error(errStrPrefix + '카드가 존재하지 않습니다.');
           }
           newState.cardData = [];
         }
@@ -344,7 +351,7 @@ class CardTable extends React.Component {
         cardCompany: targetData.cardCompany,
         bank: targetData.bank,
         bankAccount: targetData.bankAccount,
-        cardExpirationDate: moment(targetData.cardExpirationDate, 'YYYY-MM'),
+        cardExpirationDate: moment(targetData.cardExpirationDate, 'MM/YY'),
         cardStatus: targetData.cardStatus
       }
     });
@@ -383,14 +390,13 @@ class CardTable extends React.Component {
   hideDelCardDiag = () => {
     this.setState({ isDelCardDiagVisible: false });
   };
-  
 
   // createCardinfoModalForm: returns add/mod cardinfo modal form, which can be inserted in render()
-  createCardinfoModalForm = (formId, titleText, submitText, visibleState, hideFunc, submitFunc, initValues, itemDisabledStates) => {
+  createCardinfoModalForm = (formId, titleText, submitText, cancelText, visibleState, hideFunc, submitFunc, initValues, itemDisabledStates) => {
     
     const {
       requestInProgress,
-      cardcoList, bankList,
+      cardcoList, bankList
     } = this.state;
     
     if (initValues == null) {
@@ -402,26 +408,19 @@ class CardTable extends React.Component {
       onCancel={hideFunc}
       destroyOnClose={true}
       footer={[
+          <Button type="default" disabled={requestInProgress} onClick={hideFunc}>
+          {cancelText}
+        </Button>,
           <Button form={formId} type="primary"
         key="submit" htmlType="submit" loading={requestInProgress}>
           {submitText}
         </Button>
-        ]}
+      ]}
         >
         <Form id={formId} onFinish={submitFunc}
       initialValues={initValues}
       {...modanFormLayout} >
         
-        <Form.Item name='cardNum' label='카드번호'
-        rules={[
-          {
-            required: true,
-            message: '필수 입력 항목입니다.',
-          }
-        ]}>
-        <Input placeholder="'-' 없이 숫자만 입력"
-      disabled={itemDisabledStates ? itemDisabledStates.cardNum : null} />
-        </Form.Item>
         
         <Form.Item name='cardName' label='카드명'
         rules={[
@@ -447,6 +446,29 @@ class CardTable extends React.Component {
         </Select>
         </Form.Item>
         
+        <Form.Item name='cardNum' label='카드번호'
+        rules={[
+          {
+            required: true,
+            message: '필수 입력 항목입니다.',
+          },
+          {
+            len: 16,
+            message: '유효한 카드번호가 아닙니다.',
+          }
+        ]}>
+        <Input placeholder="'-' 없이 숫자만 입력"
+      disabled={itemDisabledStates ? itemDisabledStates.cardNum : null}
+      onKeyPress={(e) => {
+        if ( (!(e.charCode >= 48 && e.charCode <= 57 && e.target.value.length < 16))
+             && e.charCode != 13 ) {
+          e.preventDefault();
+        }
+        console.log(e);
+      }}
+        />
+        </Form.Item>
+        
         <Form.Item name='bank' label='결제계좌은행명'
         rules={[
           {
@@ -466,10 +488,22 @@ class CardTable extends React.Component {
             required: true,
             message: '필수 입력 항목입니다.',
           },
+          /*{
+            type: 'integer',
+            message: '유효한 계좌번호가 아닙니다.',
+          }*/
         ]}>
-        <Input placeholder="'-' 없이 숫자만 입력" 
-      disabled={itemDisabledStates ? itemDisabledStates.bankAccount : null} />
-        </Form.Item>
+        <Input placeholder="'-' 없이 숫자만 입력"
+      disabled={itemDisabledStates ? itemDisabledStates.bankAccount : null}
+      onKeyPress={(e) => {
+        if ( (!(e.charCode >= 48 && e.charCode <= 57))
+             && e.charCode != 13 ) {
+          e.preventDefault();
+        }
+        console.log(e);
+      }}
+      />
+      </Form.Item>
         
         <Form.Item name='cardExpirationDate' label='유효기간'
         rules={[
@@ -478,7 +512,7 @@ class CardTable extends React.Component {
             message: '필수 선택 항목입니다.',
           },
         ]}>
-        <DatePicker picker='month' placeholder='유효기간 선택'
+        <DatePicker placeholder='유효기간 선택' picker='month' format='MM/YY'
       disabled={itemDisabledStates ? itemDisabledStates.cardExpirationDate : null} />
         </Form.Item>
         
@@ -706,7 +740,7 @@ class CardTable extends React.Component {
       cardData, pageSize, pageIdx, maxDataCount,
       isAddCardDiagVisible, isModCardDiagVisible, isDelCardDiagVisible,
       requestInProgress,
-      cardcoList, bankList,
+      cardcoList, bankList
     } = this.state;
     const rowSelection = {
       selectedRowKeys,
@@ -739,7 +773,7 @@ class CardTable extends React.Component {
         추가
       </Button>
         
-      {this.createCardinfoModalForm("addForm", "카드 추가", "추가",
+      {this.createCardinfoModalForm("addForm", "카드 추가", "추가", "취소",
                                     isAddCardDiagVisible,
                                     this.hideAddCardDiag,
                                     this.setCardInfo,
@@ -750,12 +784,16 @@ class CardTable extends React.Component {
         수정
       </Button>
         
-      {this.createCardinfoModalForm("modForm", "카드 수정", "수정",
+      {this.createCardinfoModalForm("modForm", "카드 수정", "수정", "취소",
                                     isModCardDiagVisible,
                                     this.hideModCardDiag,
                                     this.setCardInfo,
                                     selectedCardData,
-                                    {cardNum: true})}
+                                    {
+                                      cardNum: true,
+                                      cardCompany: true,
+                                      cardExpirationDate: true
+                                    })}
       
         <Button danger onClick={this.showDelCardDiag} disabled={!itemSelected} >
         삭제
