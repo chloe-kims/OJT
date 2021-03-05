@@ -23,7 +23,6 @@ const { Option } = Select;
 
 // config
 const reqBaseUrl = 'http://192.1.4.246:14000/AB3-5/OJT/';
-const username = window.sessionStorage.getItem('id');
 const pageSizeDefault = 10;
 const modanFormLayout = {
   labelCol: {
@@ -78,6 +77,7 @@ class CardTable extends React.Component {
   state = {
     selectedRowKeys: [], // Check here to configure the default column
     loading: true,
+    username: window.sessionStorage.getItem("id"),
     cardcoList: [],
     bankList: [],
     cardData: [],
@@ -215,7 +215,10 @@ class CardTable extends React.Component {
     this.setState({loading: true});
 
     // set searchString
-    const { searchString } = this.state;
+    const {
+      searchString,
+      username
+    } = this.state;
     let searchCardName = searchString;
     let searchCardNum = searchString;
 
@@ -541,7 +544,8 @@ class CardTable extends React.Component {
     
     const {
       pageSize,
-      isAddCardDiagVisible
+      isAddCardDiagVisible,
+      username
     } = this.state;
     
     this.setState({requestInProgress: true});
