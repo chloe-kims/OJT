@@ -252,8 +252,6 @@ class CardTable extends React.Component {
         }
       })
     };
-
-    console.log(reqOpt);
     
     // send request & get response
     let response = fetch(reqBaseUrl + 'ReadCardInfo?action=SO', reqOpt)
@@ -266,7 +264,7 @@ class CardTable extends React.Component {
 
         // received data successfully
         if ('dto' in responseJson && 'CardInfo' in responseJson.dto
-            && responseJson.dto.CardInfo.length > 1) {
+            && responseJson.dto.CardInfo.length > 0) {
 
           newState.selectedRowKeys = [];
           
