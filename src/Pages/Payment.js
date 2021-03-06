@@ -416,17 +416,15 @@ class PaymentTable extends React.Component {
           onCancel={this.hideAddPayDiag}
           okText='추가' cancelText='취소'
           destroyOnClose={true}
-          footer={[ <div>
+          footer={[
+            <Button form="addPayForm" type="secondary"
+              onClick={this.hideAddPayDiag}>
+              취소
+            </Button>,
             <Button form="addPayForm" type="primary"
               key="submit" htmlType="submit">
               확인
             </Button>
-            <Button form="addPayForm" type="secondary"
-              onClick={this.hideAddPayDiag}>
-              취소
-            </Button>
-          </div>
-
           ]}
         >
         <Form id="addPayForm" onFinish={this.addPayInfo}
