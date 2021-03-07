@@ -77,7 +77,8 @@ class PaymentTable extends React.Component {
     requestInProgress: false,
     card_num: "",
     formInputPayAmount: "",
-    range: [moment("2021-01-01"), moment("2021-12-31")]
+    range: [moment().clone().startOf('year'),
+            moment().clone().endOf('year')]
   };
 
   showAddPayDiag = () => {
