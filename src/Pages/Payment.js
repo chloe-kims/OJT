@@ -510,7 +510,7 @@ class PaymentTable extends React.Component {
             </Button>,
             <Button form="addPayForm" type="primary"
               key="submit" htmlType="submit">
-              확인
+              추가
             </Button>
           ]}
         >
