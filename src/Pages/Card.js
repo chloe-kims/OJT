@@ -48,7 +48,7 @@ const columns = [
     width: '20%',
   },
   {
-    title: '결제계좌은행명',
+    title: '결제계좌은행',
     dataIndex: 'bank',
     width: '13%',
   },
@@ -592,7 +592,7 @@ class CardTable extends React.Component {
         style={{ width: 200 }}/>
         </Form.Item>
         
-        <Form.Item name='bank' label='결제계좌은행명'
+        <Form.Item name='bank' label='결제계좌은행'
         rules={[
           {
             required: true,
