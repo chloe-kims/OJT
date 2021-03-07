@@ -881,7 +881,7 @@ class CardTable extends React.Component {
     
     return (
         <div>
-        <div style={{ marginTop: 10, display: 'inline-block', width: '100%' }}>
+        <div style={{ marginTop: 10, marginBottom: 10, display: 'flex'}}>
 
 
       
@@ -891,9 +891,8 @@ class CardTable extends React.Component {
 
 
       
-        <div style={{ float: 'right' }}>
         <Button onClick={this.showAddCardDiag}
-        style={{ marginRight: 8 }}>
+        style={{ marginLeft: 'auto', marginRight: '2px' }} >
         추가
       </Button>
         
@@ -904,7 +903,7 @@ class CardTable extends React.Component {
                                     null)}
       
         <Button onClick={this.showModCardDiag} disabled={!oneItemSelected}
-        style={{ marginRight: 8 }}>
+        style={{ marginRight: '2px' }}>
         수정
       </Button>
         
@@ -919,7 +918,8 @@ class CardTable extends React.Component {
                                       cardExpirationDate: true
                                     })}
       
-        <Button danger onClick={this.showDelCardDiag} disabled={!itemSelected} >
+        <Button danger onClick={this.showDelCardDiag} disabled={!itemSelected}
+        style={{ marginRight: '2px' }}>
         삭제
       </Button>
 
@@ -931,7 +931,6 @@ class CardTable extends React.Component {
                                    this.delCardInfo)}
 
       
-      </div>
 
       
       </div>
