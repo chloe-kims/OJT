@@ -559,7 +559,7 @@ class CardTable extends React.Component {
           },
         ]}>
         <Input
-      disabled={itemDisabledStates ? itemDisabledStates.cardName : null} />
+        disabled={itemDisabledStates ? itemDisabledStates.cardName : null} />
         </Form.Item>
         
         <Form.Item name='cardCompany' label='카드사'
@@ -570,7 +570,8 @@ class CardTable extends React.Component {
           },
         ]}>
         <Select placeholder='카드사 선택' onChange={this.onCardcoSelectClick}
-      disabled={itemDisabledStates ? itemDisabledStates.cardCompany : null} >
+        disabled={itemDisabledStates ? itemDisabledStates.cardCompany : null} 
+        style={{ width: 200 }} >
         {cardcoList}
         </Select>
         </Form.Item>
@@ -586,8 +587,9 @@ class CardTable extends React.Component {
             message: '유효한 카드번호가 아닙니다.',
           }
         ]}>
-        <Input placeholder="Ex) 0000-0000-0000-0000"
-      disabled={itemDisabledStates ? itemDisabledStates.cardNum : null} />
+        <Input placeholder="####-####-####-####"
+        disabled={itemDisabledStates ? itemDisabledStates.cardNum : null} 
+        style={{ width: 200 }}/>
         </Form.Item>
         
         <Form.Item name='bank' label='결제계좌은행명'
@@ -598,7 +600,8 @@ class CardTable extends React.Component {
           },
         ]}>
         <Select placeholder='은행 선택' onChange={this.onBankSelectClick}
-      disabled={itemDisabledStates ? itemDisabledStates.bank : null} >
+      disabled={itemDisabledStates ? itemDisabledStates.bank : null} 
+        style={{ width: 200 }}>
         {bankList}
         </Select>
         </Form.Item>
@@ -612,8 +615,8 @@ class CardTable extends React.Component {
         ]}
         >
         <Input type="text" placeholder="'-' 없이 숫자만 입력"
-        disabled={itemDisabledStates ? itemDisabledStates.bankAccount : null}
-        />
+        disabled={itemDisabledStates ? itemDisabledStates.bankAccount : null} 
+        style={{ width: 200 }} />
         </Form.Item>
 
         
@@ -624,8 +627,9 @@ class CardTable extends React.Component {
             message: '필수 선택 항목입니다.',
           },
         ]}>
-        <DatePicker placeholder='유효기간 선택' picker='month' format='MM/YY'
-      disabled={itemDisabledStates ? itemDisabledStates.cardExpirationDate : null} />
+        <DatePicker placeholder='MM/YY' picker='month' format='MM/YY'
+        disabled={itemDisabledStates ? itemDisabledStates.cardExpirationDate : null}
+        style={{ width: 145 }} />
         </Form.Item>
         
         <Form.Item name='cardStatus' label='상태'

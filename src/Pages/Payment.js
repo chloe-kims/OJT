@@ -531,7 +531,7 @@ class PaymentTable extends React.Component {
             ]}>
             <Select
               showSearch
-              style={{ width: 150 }}
+              style={{ width: 200 }}
               placeholder="카드목록"
               onChange={this.onCardChange}
               onSearch={this.onCardSearch}>
@@ -551,7 +551,8 @@ class PaymentTable extends React.Component {
           </Form.Item>
 
           <Form.Item name='payDate' label='거래일자'>
-            <DatePicker picker='date' placeholder=''/>
+            <DatePicker picker='date' placeholder='YYYY-MM-DD' 
+              style={{ width: 200 }}/>
           </Form.Item>
 
           <Form.Item name='payAbroad' label='국내외결제구분'
