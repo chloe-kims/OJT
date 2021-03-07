@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
-import { Layout, Menu, Form, Input, Button } from 'antd';
+import { Layout, Menu, Form, Input, Button, message } from 'antd';
 import {
   DesktopOutlined,
   PieChartOutlined,
@@ -20,6 +20,7 @@ const FormLayoutDemo = () => {
   const [formLayout, setFormLayout] = useState('horizontal');
   const [oldpw, setOldpw] = useState('admin');
   const [newpw, setNewpw] = useState('admin123');
+  const [reqInProgress, setReqInProgress] = useState(false);
 
   const onFormLayoutChange = ({ layout }) => {
     setFormLayout(layout);
@@ -48,6 +49,7 @@ const FormLayoutDemo = () => {
 
 
   const updatePw = () => {
+    setReqInProgress(true);
     const id = window.sessionStorage.getItem('id');
     const old_data = {
       "header": {
@@ -80,13 +82,17 @@ const FormLayoutDemo = () => {
         axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/UpdateUserAccount?action=SO', new_data).then(response => {
           console.log('new post data: '+JSON.stringify(new_data))
           console.log('update')
+          message.success('비밀번호가 변경되었습니다.')
+          setReqInProgress(false)
         }).catch(error => {
-          alert('비밀번호 변경에 실패하였습니다.')
+          message.error('비밀번호 변경에 실패하였습니다.')
+          setReqInProgress(false)
         });
       }
       // alert('비밀번호를 변경하였습니다.')
     }).catch(error => {
-      alert('잘못된 비밀번호입니다.')
+      message.error('잘못된 비밀번호입니다.')
+      setReqInProgress(false)
     });
   }
 
@@ -102,13 +108,13 @@ const FormLayoutDemo = () => {
         onValuesChange={onFormLayoutChange}
       >
         <Form.Item label="현재 비밀번호">
-          <Input />
+          <Input disabled={reqInProgress}/>
         </Form.Item>
         <Form.Item label="새로운 비밀번호">
-          <Input />
+          <Input disabled={reqInProgress}/>
         </Form.Item>
         <Form.Item {...buttonItemLayout}>
-          <Button type="primary" onClick={updatePw}>변경</Button>
+          <Button type="primary" onClick={updatePw} loading={reqInProgress}>변경</Button>
         </Form.Item>
       </Form>
     </>
