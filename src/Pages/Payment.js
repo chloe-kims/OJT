@@ -550,7 +550,13 @@ class PaymentTable extends React.Component {
             <Input />
           </Form.Item>
 
-          <Form.Item name='payDate' label='거래일자'>
+          <Form.Item name='payDate' label='거래일자'
+            rules={[
+              {
+                required: true,
+                message: '필수 선택 항목입니다.',
+              },
+            ]}>
             <DatePicker picker='date' placeholder='YYYY-MM-DD' 
               style={{ width: 200 }}/>
           </Form.Item>
