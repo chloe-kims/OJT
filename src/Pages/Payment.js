@@ -76,6 +76,7 @@ class PaymentTable extends React.Component {
     isDelPayDiagVisible: false,
     requestInProgress: false,
     card_num: "",
+    formInputPayAmount: "",
     range: [moment("2021-01-01"), moment("2021-12-31")]
   };
 
@@ -95,6 +96,53 @@ class PaymentTable extends React.Component {
     });
   };
 
+    
+
+  // forceFormInputInPattern: if new value of a form does not match the pattern
+  //                          of the given field_info_regex, then it cancels the change
+  //
+  //                          - Prerequisites: - states for each input, refs for each form
+  //                                           - no need to set values of input as state
+  //
+  //                          * formRef: a reference which is created by React.createRef(),
+  //                                     and assigned by <Form ... ref={this.createdRef} ...>
+  //                          * fieldInfoMap: { formItemName1: [ stateName1, regExp1, stringProcFunc1 ]
+  //                                            formItemName2: [ stateName2, regExp2, stringProcFunc2 ],
+  //                                            ... }
+  //
+  //                      Ex) <Form onValuesChange={(changedValues) => {
+  //                              this.forceFormInputInPattern(formRef, changedValues, fieldInfoMap);
+  //                            }}
+  //                            ref={formRef} ...>
+  //
+  forceFormInputInPattern = (formRef, changedValues, fieldInfoMap) => {
+    
+    Object.keys(changedValues).forEach((k) => {
+      
+      if (fieldInfoMap[k] != null) {
+        let newValue = changedValues[k];
+        const stateName = fieldInfoMap[k][0];
+        const regExp = fieldInfoMap[k][1];
+        const stringProcFunc = fieldInfoMap[k][2];
+          
+        // if string process function exists, execute
+        if (stringProcFunc != null) {
+          newValue = stringProcFunc(newValue);
+        }
+        
+        let fieldValue = {};
+        if (newValue.match(regExp)) {
+          fieldValue[k] = newValue;
+          this.state[stateName] = newValue;
+        } else {
+          fieldValue[k] = this.state[stateName];
+        }
+      
+        formRef.current.setFieldsValue(fieldValue);
+      }
+    });
+
+  }
     
   // forceInputInPattern: if new value does not match pattern in input,
   //                      then it cancels the change
@@ -401,6 +449,11 @@ class PaymentTable extends React.Component {
     });
   }
 
+  constructor(props) {
+    super(props);
+    this.addForm = React.createRef();
+  }
+  
   componentDidMount = () => {
     const id = window.sessionStorage.getItem('id');
     this.loadData(id);
@@ -420,6 +473,17 @@ class PaymentTable extends React.Component {
     //console.log(options)
     // console.log(data);
     // console.log('render data source: '+JSON.stringify(data));
+
+    const fieldInfoMap = { payAmount: ['formInputPayAmount', /^(-)?\d*$/] };
+
+  //                      Ex) <Form onValuesChange={(changedValues) => {
+  //                              this.forceFormInputInPattern(formRef, changedValues, fieldInfoMap);
+  //                            }}
+  //                            ref={formRef} ...>
+
+
+
+      
     return (
       <div>
         <div style={{ marginTop: 10, marginBottom: 10, display: 'flex'}}>
@@ -450,7 +514,12 @@ class PaymentTable extends React.Component {
           ]}
         >
         <Form id="addPayForm" onFinish={this.addPayInfo}
-        initialValues={{payAbroad: 'C001', payApprov: 'E001'}} {...modanFormLayout}>
+        initialValues={{payAbroad: 'C001', payApprov: 'E001'}}
+        onValuesChange={(changedValues) => {
+          this.forceFormInputInPattern(this.addForm, changedValues, fieldInfoMap);
+        }}
+        ref={this.addForm}
+        {...modanFormLayout}>
 
           <Form.Item name='cardNum' label='카드번호'
             rules={[
