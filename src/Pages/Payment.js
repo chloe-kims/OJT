@@ -71,7 +71,7 @@ class PaymentTable extends React.Component {
     payment_data: [],
     selectedPayID: [],
     cardList: [],
-    loading: false,
+    loading: true,
     isAddPayDiagVisible: false,
     isDelPayDiagVisible: false,
     requestInProgress: false,
