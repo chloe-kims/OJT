@@ -13,11 +13,11 @@ const HomeForm = () => {
       className="login-form"
     >
       <Form.Item name="username">
-        <Button style={{ width: '100%'}}><Link to="/login">Sign In</Link></Button>
+        <Button style={{ width: '100%'}}><Link to="/login">로그인</Link></Button>
       </Form.Item>
 
       <Form.Item name="password">
-        <Button style={{ width: '100%'}}><Link to="/sign">Sign Up</Link></Button>
+        <Button style={{ width: '100%'}}><Link to="/sign">회원가입</Link></Button>
       </Form.Item>
 
     </Form>

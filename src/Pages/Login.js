@@ -58,7 +58,7 @@ function NormalLoginForm ({authenticated, login, location, loginInProgress}) {
         <Input 
           type='text'
           prefix={<UserOutlined className="site-form-item-icon" />}
-          placeholder="Username" 
+          placeholder="ID" 
           disabled={loginInProgress}
         />
       </Form.Item>
@@ -73,26 +73,23 @@ function NormalLoginForm ({authenticated, login, location, loginInProgress}) {
       >
         <Input
           type="password"
-          placeholder="Password"
+          placeholder="비밀번호"
           disabled={loginInProgress}
         />
       </Form.Item>
       <Form.Item>
         <Form.Item name="remember" valuePropName="checked" noStyle>
-          <Checkbox disabled={loginInProgress}>Remember me</Checkbox>
+          <Checkbox disabled={loginInProgress}>ID 기억하기</Checkbox>
         </Form.Item>
 
-        <a className="login-form-forgot" href="">
-          Forgot password?
-        </a>
       </Form.Item>
 
       <Form.Item>
         <Button style={{ margin: '10px' }} type="primary" htmlType="submit" className="login-form-button" loading={loginInProgress}>
-          Log in
+          로그인
         </Button>
         <br/>
-        Or <Link to='/sign'>register now!</Link>
+        또는 <Link to='/sign'>새로 가입하기</Link>
       </Form.Item>
     </Form>
   );
