@@ -15,6 +15,8 @@ import {
   Button,
   Modal,
   Space,
+  message,
+  DatePicker
 } from 'antd';
 import { QuestionCircleOutlined } from '@ant-design/icons';
 const { Option } = Select;
@@ -82,7 +84,11 @@ const Postcode = (props) => {
 const ModalContainer = (props) => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [address, setAddress] = useState('');
-
+  const [reqInProgress, setReqInProgress] = useState({...props.reqInProgress});
+  React.useEffect(() => {
+      setReqInProgress(props.reqInProgress);
+  }, [props.reqInProgress])
+    
   const showModal = () => {
     setIsModalVisible(true);
   };
@@ -103,7 +109,7 @@ const ModalContainer = (props) => {
   return (
     <>
       <Space direction="vertical" onClick={showModal} style={{ width: '100%' }}>
-        <Search placeholder={address} />
+        <Search placeholder={address} disabled={props.reqInProgress}/>
       </Space>
       <Modal visible={isModalVisible} onOk={handleOk} onCancel={handleCancel}>
         <Postcode changeAddress={e => changeAddress(e)} />
@@ -115,8 +121,10 @@ const ModalContainer = (props) => {
 const RegistrationForm = () => {
   const [form] = Form.useForm();
   const [addr, setAddr] = useState('');
+  const [reqInProgress, setReqInProgress] = useState(false);
 
   const onFinish = (values) => {
+    setReqInProgress(true);
     // console.log('Received values of form: ', values);
     // console.log({addr});
     let big_addr = JSON.stringify({addr}).slice(9, -2);
@@ -141,10 +149,11 @@ const RegistrationForm = () => {
     }
     console.log(data);
     axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/InsertUserAccount?action=SO', data).then(response => {
-      alert('회원가입이 완료되었습니다.')
-
+      message.success('회원가입이 완료되었습니다.')
+      setReqInProgress(false)
     }).catch(error => {
-      alert('회원가입에 실패하였습니다. 잠시후 다시 시도해주세요.')
+      message.error('회원가입에 실패하였습니다. 잠시 후 다시 시도해주세요.')
+      setReqInProgress(false)
     });
   };
 
@@ -154,7 +163,7 @@ const RegistrationForm = () => {
 
   const prefixSelector = (
     <Form.Item name="prefix" noStyle>
-      <Select
+      <Select disabled={reqInProgress}
         style={{
           width: 70,
         }}
@@ -183,7 +192,7 @@ const RegistrationForm = () => {
           },
         ]}
       >
-        <Input />
+        <Input disabled={reqInProgress}/>
       </Form.Item>
 
       <Form.Item
@@ -197,7 +206,7 @@ const RegistrationForm = () => {
         ]}
         hasFeedback
       >
-        <Input.Password />
+        <Input.Password disabled={reqInProgress}/>
       </Form.Item>
 
       <Form.Item
@@ -221,7 +230,7 @@ const RegistrationForm = () => {
           }),
         ]}
       >
-        <Input.Password />
+        <Input.Password disabled={reqInProgress}/>
       </Form.Item>
 
       <Form.Item
@@ -235,7 +244,7 @@ const RegistrationForm = () => {
           },
         ]}
       >
-        <Input />
+        <Input disabled={reqInProgress}/>
       </Form.Item>
 
       <Form.Item
@@ -255,28 +264,28 @@ const RegistrationForm = () => {
           },
         ]}
       >
-        <Input />
+        <Input disabled={reqInProgress}/>
       </Form.Item>
 
       <Form.Item
         name="address"
         label="주소"
       >
-        <ModalContainer changeAddr={e => changeAddr(e)}/>
+        <ModalContainer changeAddr={e => changeAddr(e)} reqInProgress={reqInProgress}/>
       </Form.Item>
 
       <Form.Item
         name="detail_address"
         label="상세 주소"
       >
-        <Input />
+        <Input disabled={reqInProgress}/>
       </Form.Item>
 
       <Form.Item
         name="ceo_nm"
         label="대표자 이름"
       >
-        <Input/>
+        <Input disabled={reqInProgress}/>
       </Form.Item>
 
       <Form.Item
@@ -288,6 +297,7 @@ const RegistrationForm = () => {
           style={{
             width: '100%',
           }}
+          disabled={reqInProgress}
         />
       </Form.Item>
 
@@ -301,14 +311,18 @@ const RegistrationForm = () => {
           },
         ]}
       >
-        <Input />
+        <Input disabled={reqInProgress}/>
       </Form.Item>
 
       <Form.Item
         name="birth"
-        label="생년월일"
+        label="대표 생년월일"
       >
-        <Input/>
+        <DatePicker disabled={reqInProgress}
+          placeholder='YYYY-MM-DD'
+          style={{
+            width: '100%',
+          }}/>
       </Form.Item>
 
       <Form.Item
@@ -322,12 +336,12 @@ const RegistrationForm = () => {
         ]}
         {...tailFormItemLayout}
       >
-        <Checkbox>
+        <Checkbox disabled={reqInProgress}>
           나는 <a href="https://kr.tmaxsoft.com/bbs.do?cms_cd=ETC_90">개인정보 처리방침</a>를 읽었으며, 이에 동의합니다.
         </Checkbox>
       </Form.Item>
       <Form.Item {...tailFormItemLayout}>
-        <Button type="primary" htmlType="submit">
+        <Button type="primary" htmlType="submit" loading={reqInProgress}>
           회원가입
         </Button>
       </Form.Item>
