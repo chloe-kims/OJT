@@ -7,7 +7,7 @@ import { UserOutlined, LockOutlined } from '@ant-design/icons';
 import { Link, Redirect } from 'react-router-dom';
 
 
-function NormalLoginForm ({authenticated, login, location}) {
+function NormalLoginForm ({authenticated, login, location, loginInProgress}) {
   // const [id, setId] = useState('');
   // const [password, setPassword] = useState('');
 
@@ -34,6 +34,7 @@ function NormalLoginForm ({authenticated, login, location}) {
   };
 
   const { from } = location.state || { from: { pathname: "/main" } }
+  
   if (authenticated) return <Redirect to={from} />
 
   return (
@@ -57,7 +58,9 @@ function NormalLoginForm ({authenticated, login, location}) {
         <Input 
           type='text'
           prefix={<UserOutlined className="site-form-item-icon" />}
-          placeholder="Username" />
+          placeholder="Username" 
+          disabled={loginInProgress}
+        />
       </Form.Item>
       <Form.Item
         name="password"
@@ -71,11 +74,12 @@ function NormalLoginForm ({authenticated, login, location}) {
         <Input
           type="password"
           placeholder="Password"
+          disabled={loginInProgress}
         />
       </Form.Item>
       <Form.Item>
         <Form.Item name="remember" valuePropName="checked" noStyle>
-          <Checkbox>Remember me</Checkbox>
+          <Checkbox disabled={loginInProgress}>Remember me</Checkbox>
         </Form.Item>
 
         <a className="login-form-forgot" href="">
@@ -84,7 +88,7 @@ function NormalLoginForm ({authenticated, login, location}) {
       </Form.Item>
 
       <Form.Item>
-        <Button style={{ margin: '10px' }} type="primary" htmlType="submit" className="login-form-button">
+        <Button style={{ margin: '10px' }} type="primary" htmlType="submit" className="login-form-button" loading={loginInProgress}>
           Log in
         </Button>
         <br/>
@@ -94,14 +98,14 @@ function NormalLoginForm ({authenticated, login, location}) {
   );
 };
 
-function Login({authenticated, login, location}) {
+  function Login({authenticated, login, location, loginInProgress}) {
     return (
       <div className="App">
         <header className="App-header">
           <a href="http://localhost:3000" style={{ display: 'inline-block' }}>
             <img src={tmax} className="App-logo" alt="logo" />
           </a>
-          <NormalLoginForm authenticated={authenticated} login={login} location={location}/>
+          <NormalLoginForm authenticated={authenticated} login={login} location={location} loginInProgress={loginInProgress}/>
         </header>
       </div>
     );
