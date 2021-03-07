@@ -108,10 +108,10 @@ const FormLayoutDemo = () => {
         onValuesChange={onFormLayoutChange}
       >
         <Form.Item label="현재 비밀번호">
-          <Input disabled={reqInProgress}/>
+          <Input.Password disabled={reqInProgress}/>
         </Form.Item>
         <Form.Item label="새로운 비밀번호">
-          <Input disabled={reqInProgress}/>
+          <Input.Password disabled={reqInProgress}/>
         </Form.Item>
         <Form.Item {...buttonItemLayout}>
           <Button type="primary" onClick={updatePw} loading={reqInProgress}>변경</Button>
