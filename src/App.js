@@ -62,7 +62,8 @@ function App() {
     setLoginInProgress(true);
     onLogin({ id, password })
           .then(response => {setUser(response)
-                             setLoginInProgress(false)})
+                             setLoginInProgress(false)
+                             message.success('\'' + user + '\'로 로그인 되었습니다.')})
     .catch((e) => { 
       console.log(e)
       message.error('로그인에 실패하였습니다.')
