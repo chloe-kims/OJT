@@ -75,9 +75,11 @@ const columns = [
 class CardTable extends React.Component {
 
   state = {
+    username: window.sessionStorage.getItem("id"),
     selectedRowKeys: [], // Check here to configure the default column
     loading: true,
-    username: window.sessionStorage.getItem("id"),
+    requestInProgress: false,
+    
     cardcoList: [],
     bankList: [],
     cardData: [],
@@ -86,14 +88,13 @@ class CardTable extends React.Component {
     pageSize: pageSizeDefault,
     pageIdx: 1,
     searchString: null,
+    
     isAddCardDiagVisible: false,
     isModCardDiagVisible: false,
     isDelCardDiagVisible: false,
-    requestInProgress: false
-  };
-
-  start = () => {
-    this.setState({ loading: true });
+    
+    formInputCardNum: "",
+    formInputBankAcc: "",
   };
 
   onSelectChange = selectedRowKeys => {
@@ -104,6 +105,109 @@ class CardTable extends React.Component {
   setPageStates = (page, pageSize) => {
     this.setState({ pageSize: pageSize, pageIdx: page });
   }
+    
+
+
+  //////////////////// force input ////////////////////
+
+  // initializeInputValues: initialize all states in arg list to empty string
+  initializeInputValues = (inputValueStateNameList) => {
+    let resultObj = {};
+    if (inputValueStateNameList != null
+      && Array.isArray(inputValueStateNameList)) {
+      inputValueStateNameList.forEach(name => resultObj[name] = "");
+    }
+    this.setState(resultObj);
+  }
+
+
+  // forceInputInPattern: if new value does not match pattern in input,
+  //                      then it cancels the change
+  //
+  //                      - Prerequisites: need to set values of input as state
+  //
+  //                      Ex) <Input onInput={(e) => this.forceInputInPattern(e, 'stateName')}
+  //                            value={stateName} ... />
+  //
+  forceInputInPattern = (e, inputValueStateName) => {
+    console.log('forceInputInPattern', e, inputValueStateName);
+    let resultObj = {};
+    resultObj[inputValueStateName] =
+      (e.target.validity.valid)
+      ? e.target.value
+      : this.state[inputValueStateName];
+    
+    this.setState(resultObj);
+  }
+
+  // forceFormInputInPattern: if new value of a form does not match the pattern
+  //                          of the given field_info_regex, then it cancels the change
+  //
+  //                          - Prerequisites: - states for each input, refs for each form
+  //                                           - no need to set values of input as state
+  //
+  //                          * formRef: a reference which is created by React.createRef(),
+  //                                     and assigned by <Form ... ref={this.createdRef} ...>
+  //                          * fieldInfoMap: { formItemName1: [ stateName1, regExp1, stringProcFunc1 ]
+  //                                            formItemName2: [ stateName2, regExp2, stringProcFunc2 ],
+  //                                            ... }
+  //
+  //                      Ex) <Form onValuesChange={(changedValues) => {
+  //                              this.forceFormInputInPattern(formRef, changedValues, fieldInfoMap);
+  //                            }}
+  //                            ref={formRef} ...>
+  //
+  forceFormInputInPattern = (formRef, changedValues, fieldInfoMap) => {
+    
+    Object.keys(changedValues).forEach((k) => {
+      
+      if (fieldInfoMap[k] != null) {
+        let newValue = changedValues[k];
+        const stateName = fieldInfoMap[k][0];
+        const regExp = fieldInfoMap[k][1];
+        const stringProcFunc = fieldInfoMap[k][2];
+          
+        // if string process function exists, execute
+        if (stringProcFunc != null) {
+          newValue = stringProcFunc(newValue);
+        }
+        
+        let fieldValue = {};
+        if (newValue.match(regExp)) {
+          fieldValue[k] = newValue;
+          this.state[stateName] = newValue;
+        } else {
+          fieldValue[k] = this.state[stateName];
+        }
+      
+        formRef.current.setFieldsValue(fieldValue);
+      }
+    });
+
+  }
+
+  cardNumSetDash = (input) => {
+    let returnVal = input;
+    if (input.length <= 19 && input.match(/\d{5}$/)) {
+      const valLen = returnVal.length;
+      returnVal = input.slice(0, valLen - 1) + '-' + input.substr(valLen - 1);
+    }
+    return returnVal;
+  }
+
+  cardNumRemoveDash = (input) => {
+    return input.replace(/-/g, '');
+  }
+
+    
+  fieldInfoMap = {
+    cardNum: ['formInputCardNum',
+              /^(\d(\d(\d(\d(-(\d(\d(\d(\d(-(\d(\d(\d(\d(-(\d(\d(\d(\d)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?$/,
+              this.cardNumSetDash],
+    bankAccount: ['formInputBankAcc', /^\d*$/],
+  }
+
+
 
   
   //////////////////// data fetch ////////////////////
@@ -272,7 +376,7 @@ class CardTable extends React.Component {
             key: idx,
             cardName: cardinfo.CARD_NM,
             cardCompany: cardinfo.CARDCO_NM,
-            cardNum: cardinfo.CARD_NUM,
+            cardNum: this.cardNumSetDash(cardinfo.CARD_NUM),
             bankAccount: cardinfo.BANK_ACC,
             bank: cardinfo.BANK_NM,
             cardExpirationDate: moment(new Date(cardinfo.CARD_EXPIRED)).format('MM/YY'),
@@ -391,6 +495,9 @@ class CardTable extends React.Component {
     this.setState({ isDelCardDiagVisible: false });
   };
 
+
+
+    
   // createCardinfoModalForm: returns add/mod cardinfo modal form, which can be inserted in render()
   createCardinfoModalForm = (formId, titleText, submitText, cancelText, visibleState, hideFunc, submitFunc, initValues, itemDisabledStates) => {
     
@@ -403,12 +510,30 @@ class CardTable extends React.Component {
       initValues = {cardStatus: '사용'};
     }
 
+    // reset forced inputs when hide modal
+    const hideFuncInitValues = (e) => {
+      // list of value states to initialize when closed
+      this.initializeInputValues(
+        [
+          'formInputCardNum',
+          'formInputBankAcc',
+        ]
+      );
+      // execute hideFunc
+      hideFunc(e);
+    }
+
+
+    //const forceInputInPattern = (e, inputValueStateName) => {
+    //  (this.forceInputValidity.bind(this))(e, inputValueStateName);
+    //}
+  
     return (
         <Modal title={titleText} visible={visibleState}
-      onCancel={hideFunc}
+        onCancel={hideFuncInitValues}
       destroyOnClose={true}
       footer={[
-          <Button type="default" disabled={requestInProgress} onClick={hideFunc}>
+          <Button type="default" disabled={requestInProgress} onClick={hideFuncInitValues}>
           {cancelText}
         </Button>,
           <Button form={formId} type="primary"
@@ -418,6 +543,10 @@ class CardTable extends React.Component {
       ]}
         >
         <Form id={formId} onFinish={submitFunc}
+        onValuesChange={(changedValues) => {
+            this.forceFormInputInPattern(this[formId], changedValues, this.fieldInfoMap);
+        }}
+        ref={this[formId]}
       initialValues={initValues}
       {...modanFormLayout} >
         
@@ -453,20 +582,12 @@ class CardTable extends React.Component {
             message: '필수 입력 항목입니다.',
           },
           {
-            len: 16,
+            len: 19,
             message: '유효한 카드번호가 아닙니다.',
           }
         ]}>
-        <Input placeholder="'-' 없이 숫자만 입력"
-      disabled={itemDisabledStates ? itemDisabledStates.cardNum : null}
-      onKeyPress={(e) => {
-        if ( (!(e.charCode >= 48 && e.charCode <= 57 && e.target.value.length < 16))
-             && e.charCode != 13 ) {
-          e.preventDefault();
-        }
-        console.log(e);
-      }}
-        />
+        <Input placeholder="Ex) 0000-0000-0000-0000"
+      disabled={itemDisabledStates ? itemDisabledStates.cardNum : null} />
         </Form.Item>
         
         <Form.Item name='bank' label='결제계좌은행명'
@@ -481,29 +602,20 @@ class CardTable extends React.Component {
         {bankList}
         </Select>
         </Form.Item>
-        
+            
         <Form.Item name='bankAccount' label='결제계좌번호'
         rules={[
           {
             required: true,
             message: '필수 입력 항목입니다.',
-          },
-          /*{
-            type: 'integer',
-            message: '유효한 계좌번호가 아닙니다.',
-          }*/
-        ]}>
-        <Input placeholder="'-' 없이 숫자만 입력"
-      disabled={itemDisabledStates ? itemDisabledStates.bankAccount : null}
-      onKeyPress={(e) => {
-        if ( (!(e.charCode >= 48 && e.charCode <= 57))
-             && e.charCode != 13 ) {
-          e.preventDefault();
-        }
-        console.log(e);
-      }}
-      />
-      </Form.Item>
+          }
+        ]}
+        >
+        <Input type="text" placeholder="'-' 없이 숫자만 입력"
+        disabled={itemDisabledStates ? itemDisabledStates.bankAccount : null}
+        />
+        </Form.Item>
+
         
         <Form.Item name='cardExpirationDate' label='유효기간'
         rules={[
@@ -529,12 +641,16 @@ class CardTable extends React.Component {
         <Radio.Button value='사용중지'>사용중지</Radio.Button>
         </Radio.Group>
         </Form.Item>
-        
+            
         </Form>
         </Modal>
     );
   };
 
+
+
+
+  // createConfirmModalForm: create modal for confirm
   createConfirmModalForm = (formId, titleText, confirmText, visibleState, hideFunc, submitFunc) => {
 
     const { requestInProgress } = this.state;
@@ -562,7 +678,8 @@ class CardTable extends React.Component {
     );
   }
   
-  
+
+    
   
   //////////////////// add & mod & del card info ////////////////////
   
@@ -592,7 +709,7 @@ class CardTable extends React.Component {
           USER_ID: username,
           CARD_NM: cardinfo.cardName,
           CARDCO_NM: cardinfo.cardCompany,
-          CARD_NUM: cardinfo.cardNum,
+          CARD_NUM: this.cardNumRemoveDash(cardinfo.cardNum),
           BANK_NM: cardinfo.bank,
           BANK_ACC: cardinfo.bankAccount,
           CARD_EXPIRED: [expirationDate.getFullYear(),
@@ -660,7 +777,7 @@ class CardTable extends React.Component {
             DATA_TYPE: 'J'
           },
           dto: {
-            CARD_NUM: cardNum
+            CARD_NUM: this.cardNumRemoveDash(cardNum)
           }
         })
       };
@@ -724,6 +841,13 @@ class CardTable extends React.Component {
 
   
   //////////////////// initial fetch ////////////////////
+
+
+  constructor(props) {
+    super(props);
+    this.addForm = React.createRef();
+    this.modForm = React.createRef();
+  }
   
   componentDidMount() {
     this.fetchCardData({pageSize: pageSizeDefault, current: -1});
@@ -832,7 +956,7 @@ class SiderDemo extends React.Component {
     window.sessionStorage.clear();
     window.location.reload();
   }
-  
+
   render() {
     const { collapsed } = this.state;
     return (
@@ -853,9 +977,6 @@ class SiderDemo extends React.Component {
         <Menu.Item key="4"><Link to="/userinfo/pw">비밀번호 변경</Link></Menu.Item>
         <Menu.Item key="5"><Link to="/userinfo/change">회원정보 수정</Link></Menu.Item>
         </SubMenu>
-        <Menu.Item key="6" icon={<FileOutlined />}>
-        <Link to="/file">파일</Link>
-        </Menu.Item>
         </Menu>
         </Sider>
         <Layout className="site-layout">

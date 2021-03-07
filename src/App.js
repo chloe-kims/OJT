@@ -13,7 +13,6 @@ import Card from './Pages/Card';
 import Payment from './Pages/Payment';
 import UserInfoPw from './Pages/UserInfoPw';
 import UserInfoChange from './Pages/UserInfoChange';
-import File from './Pages/File';
 import Deny from './Pages/Deny';
 import 'antd/dist/antd.css';
 import { Layout } from 'antd';
@@ -114,12 +113,6 @@ function App() {
             <UserInfoChange userid={id} />
           )}
           />
-          <AuthRoute authenticated={authenticated}
-          path='/file' 
-          render={props =>  (
-            <File userid={id} />
-          )}
-          /> 
           <Route path='/' component={ Deny } />
         </Switch>
       </Router>
