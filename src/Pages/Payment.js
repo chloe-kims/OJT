@@ -95,6 +95,27 @@ class PaymentTable extends React.Component {
     });
   };
 
+    
+  // forceInputInPattern: if new value does not match pattern in input,
+  //                      then it cancels the change
+  //
+  //                      - Prerequisites: need to set values of input as state
+  //
+  //                      Ex) <Input onInput={(e) => this.forceInputInPattern(e, 'stateName')}
+  //                            value={stateName} ... />
+  //
+  forceInputInPattern = (e, inputValueStateName, pattern) => {
+    //console.log('forceInputInPattern', e, inputValueStateName);
+    let resultObj = {};
+    resultObj[inputValueStateName] =
+      e.target.value.match(pattern)
+      ? e.target.value
+      : this.state[inputValueStateName];
+    
+    this.setState(resultObj);
+  }
+  
+
   // hideDelCardDiag: hide del modal
   hideDelPayDiag = () => {
     this.setState({ isDelPayDiagVisible: false });
@@ -408,7 +429,8 @@ class PaymentTable extends React.Component {
           onChange={(value, dateString) => this.setState({ range: value })}
           style={{ marginRight: '2px' }}
         />
-        <Search value={card_num} placeholder="카드번호" onSearch={this.onSearch} onChange={this.onChange} style={{ width: 200 }} />
+        <Search value={card_num} placeholder="카드번호" onSearch={this.onSearch}
+          onInput={(e) => this.forceInputInPattern(e, 'card_num', /^\d{0,16}$/)} style={{ width: 200 }} />
         <Button style={{ marginLeft: 'auto'  }} onClick={this.showAddPayDiag} >
           추가
         </Button>
@@ -515,7 +537,7 @@ class SiderDemo extends React.Component {
   };
 
   onCollapse = collapsed => {
-    console.log(collapsed);
+    //console.log(collapsed);
     this.setState({ collapsed });
   };
 
