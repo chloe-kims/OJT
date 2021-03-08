@@ -103,7 +103,7 @@ const FormLayoutDemo = () => {
 
   return (
     <>
-      <Form style = {{margin: 'auto', maxWidth: '50%', paddingRight: '30px'}}
+      <Form style = {{margin: 'auto', maxWidth: '50vw', paddingRight: '30px'}}
         {...formItemLayout}
         layout={formLayout}
         form={form}
@@ -177,7 +177,7 @@ class SiderDemo extends React.Component {
             </Menu.Item>
             <SubMenu key="sub1" icon={<UserOutlined />} title="회원 정보">
               <Menu.Item key="4"><Link to="/userinfo/pw">비밀번호 변경</Link></Menu.Item>
-              <Menu.Item key="5"><Link to="/userinfo/change">회원정보 수정</Link></Menu.Item>
+              {/* <Menu.Item key="5"><Link to="/userinfo/change">회원정보 수정</Link></Menu.Item> */}
             </SubMenu>
           </Menu>
         </Sider>
@@ -187,7 +187,7 @@ class SiderDemo extends React.Component {
               Logout
             </Button>
           </Header>
-          <Content style={{ margin: '150px' }}>
+          <Content style={{ paddingTop: '10vw', paddingLeft: '5vw' }}>
             <FormLayoutDemo />
           </Content>
         </Layout>

@@ -112,12 +112,12 @@ function App() {
             <UserInfoPw userid={id} />
           )}
           />
-          <AuthRoute authenticated={authenticated}
+          {/* <AuthRoute authenticated={authenticated}
           path='/userinfo/change'
           render={props =>  (
             <UserInfoChange userid={id} />
           )}
-          />
+          /> */}
           <Route path='/' component={ Deny } />
         </Switch>
       </Router>

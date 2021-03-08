@@ -652,7 +652,7 @@ class SiderDemo extends React.Component {
             </Menu.Item>
             <SubMenu key="sub1" icon={<UserOutlined />} title="회원 정보">
               <Menu.Item key="4"><Link to="/userinfo/pw">비밀번호 변경</Link></Menu.Item>
-              <Menu.Item key="5"><Link to="/userinfo/change">회원정보 수정</Link></Menu.Item>
+              {/* <Menu.Item key="5"><Link to="/userinfo/change">회원정보 수정</Link></Menu.Item> */}
             </SubMenu>
           </Menu>
         </Sider>
