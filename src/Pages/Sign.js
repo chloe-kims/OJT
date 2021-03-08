@@ -119,6 +119,21 @@ const ModalContainer = (props) => {
   );
 };
 
+function getFormatDate(date){
+  var year = date.getFullYear();              //yyyy
+  var month = (1 + date.getMonth());          //M
+  month = month >= 10 ? month : '0' + month;  //month 두자리로 저장
+  var day = date.getDate();                   //d
+  day = day >= 10 ? day : '0' + day;          //day 두자리로 저장
+  var hour = date.getHours();
+  hour = hour >= 10 ? hour : '0' + hour;
+  var minute = date.getMinutes();
+  minute = minute >= 10 ? minute : '0' + minute;
+  var seconds = date.getSeconds();
+  seconds = seconds >= 10 ? seconds : '0' + seconds;
+  return  year + '-' + month + '-' + day + ' ' + hour + ':' + minute + ':' + seconds;       //'-' 추가하여 yyyy-mm-dd 형태 생성 가능
+}
+
 const RegistrationForm = () => {
   const [form] = Form.useForm();
   const [addr, setAddr] = useState('');
@@ -130,6 +145,7 @@ const RegistrationForm = () => {
     // console.log({addr});
     let big_addr = JSON.stringify({addr}).slice(9, -2);
     let date = new Date();
+    date = getFormatDate(date);
     const pw = crypto.createHash('sha512').update(values.password).digest('base64');
     const data = {
       "header": {
@@ -145,7 +161,7 @@ const RegistrationForm = () => {
         "COMP_NUM": values.comp_reg,
         "COMP_CEO_NM": values.ceo_nm,
         "COMP_CEO_BIRTH": moment(values.birth).format('YYYY-MM-DD'),
-        "LAST_LOGIN": '2021-03-05 02:05:01'
+        "LAST_LOGIN": date
       }
     }
     console.log(data);
