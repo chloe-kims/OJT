@@ -81,6 +81,10 @@ class PaymentTable extends React.Component {
             moment().clone().endOf('year')]
   };
 
+  numberWithCommas(x) {
+    return x.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+  }
+
   showAddPayDiag = () => {
     this.setState({ isAddPayDiagVisible: true, isDelCardDiagVisible: false });
   };
@@ -190,7 +194,7 @@ class PaymentTable extends React.Component {
             pay_id: temp[i].PAY_ID,
             date: temp[i].PAY_TIME.slice(0,10),
             card_num: temp[i].CARD_NUM.slice(0,4)+'-'+temp[i].CARD_NUM.slice(4,8)+'-'+temp[i].CARD_NUM.slice(8,12)+'-'+temp[i].CARD_NUM.slice(12,16),
-            amount: temp[i].PAY_AMOUNT+'원',
+            amount: this.numberWithCommas(temp[i].PAY_AMOUNT)+'원',
             // status: temp[i].PAY_STATUS === "E001" ? `승인` : `거절`,
             abroad: temp[i].PAY_ABROAD === `C001` ? `국내` : `해외`,
             memo: temp[i].PAY_MEMO
@@ -238,7 +242,7 @@ class PaymentTable extends React.Component {
               pay_id: temp[i].PAY_ID,
               date: temp[i].PAY_TIME.slice(0,10),
               card_num: temp[i].CARD_NUM.slice(0,4)+'-'+temp[i].CARD_NUM.slice(4,8)+'-'+temp[i].CARD_NUM.slice(8,12)+'-'+temp[i].CARD_NUM.slice(12,16),
-              amount: temp[i].PAY_AMOUNT+'원',
+              amount: this.numberWithCommas(temp[i].PAY_AMOUNT)+'원',
               // status: temp[i].PAY_STATUS === "E001" ? `승인` : `거절`,
               abroad: temp[i].PAY_ABROAD === `C001` ? `국내` : `해외`,
               memo: temp[i].PAY_MEMO
