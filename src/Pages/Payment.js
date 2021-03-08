@@ -31,23 +31,23 @@ const columns = [
   {
     title: '승인번호',
     dataIndex: 'pay_id',
-    width: '16%'
+    width: '20%'
   },
   {
     title: '카드번호',
     dataIndex: 'card_num',
-    width: '20%'
+    width: '26%'
   },
   {
     title: '국내외결제구분',
     dataIndex: 'abroad',
     width: '10%'
   },
-  {
-    title: '승인여부',
-    dataIndex: 'status',
-    width: '10%'
-  },
+  // {
+  //   title: '승인여부',
+  //   dataIndex: 'status',
+  //   width: '10%'
+  // },
   {
     title: '결제금액',
     dataIndex: 'amount',
@@ -191,7 +191,7 @@ class PaymentTable extends React.Component {
             date: temp[i].PAY_TIME.slice(0,10),
             card_num: temp[i].CARD_NUM.slice(0,4)+'-'+temp[i].CARD_NUM.slice(4,8)+'-'+temp[i].CARD_NUM.slice(8,12)+'-'+temp[i].CARD_NUM.slice(12,16),
             amount: temp[i].PAY_AMOUNT+'원',
-            status: temp[i].PAY_STATUS === "E001" ? `승인` : `거절`,
+            // status: temp[i].PAY_STATUS === "E001" ? `승인` : `거절`,
             abroad: temp[i].PAY_ABROAD === `C001` ? `국내` : `해외`,
             memo: temp[i].PAY_MEMO
           });
@@ -209,8 +209,8 @@ class PaymentTable extends React.Component {
 
   onSearch = () => {
     this.setState({ loading: true })
-    const date_start = this.state.range[0].format(dateFormat);
-    const date_end = this.state.range[1].format(dateFormat);
+    const date_start = this.state.range == null ? "1900/01/01" : this.state.range[0].format(dateFormat);
+    const date_end = this.state.range == null ? "9999/12/31" : this.state.range[1].format(dateFormat);
     const card_num = this.state.card_num;
     const id = window.sessionStorage.getItem('id');
     if((date_start == null) || (date_end == null)){
@@ -238,7 +238,7 @@ class PaymentTable extends React.Component {
             date: temp[i].PAY_TIME.slice(0,10),
             card_num: temp[i].CARD_NUM.slice(0,4)+'-'+temp[i].CARD_NUM.slice(4,8)+'-'+temp[i].CARD_NUM.slice(8,12)+'-'+temp[i].CARD_NUM.slice(12,16),
             amount: temp[i].PAY_AMOUNT+'원',
-            status: temp[i].PAY_STATUS === "E001" ? `승인` : `거절`,
+            // status: temp[i].PAY_STATUS === "E001" ? `승인` : `거절`,
             abroad: temp[i].PAY_ABROAD === `C001` ? `국내` : `해외`,
             memo: temp[i].PAY_MEMO
           });
@@ -298,12 +298,12 @@ class PaymentTable extends React.Component {
           "DATA_TYPE": "3"
       },
       "dto": {
-        "PAY_ID": "0003133",
+        "PAY_ID": Math.floor(Math.random()*10000000),
         "CARD_NUM": payinfo.cardNum,
         "PAY_TIME": date,
         "PAY_AMOUNT": payinfo.payAmount,
         "PAY_ABROAD": payinfo.payAbroad,
-        "PAY_STATUS": payinfo.payApprov,
+        "PAY_STATUS": "E001",
         "PAY_MEMO": payinfo.payMemo
       }
     }
@@ -578,7 +578,7 @@ class PaymentTable extends React.Component {
             </Radio.Group>
           </Form.Item>
 
-          <Form.Item name='payApprov' label='승인여부'
+          {/* <Form.Item name='payApprov' label='승인여부'
             rules={[
               {
                 required: true,
@@ -589,9 +589,9 @@ class PaymentTable extends React.Component {
             <Radio.Button value='E001'>승인</Radio.Button>
             <Radio.Button value='E002'>거절</Radio.Button>
             </Radio.Group>
-          </Form.Item>
+          </Form.Item> */}
 
-          <Form.Item name='payMemo' label='추가사항'>
+          <Form.Item name='payMemo' label='비고'>
             <Input />
           </Form.Item>
 
