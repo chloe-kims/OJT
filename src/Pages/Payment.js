@@ -264,7 +264,7 @@ class PaymentTable extends React.Component {
       const card_data = [];
       for (let i = 0; i < temp.length; i++) {
         card_data.push({
-          key: i,
+          key: temp[i].CARD_NUM,
           name: temp[i].CARD_NM+'('+temp[i].CARD_NUM.slice(-4,)+')'
         })
       }
@@ -470,7 +470,7 @@ class PaymentTable extends React.Component {
     const hasSelected = selectedRowKeys.length > 0;
     const data = this.state.payment_data;
     // console.log(cardList);
-    var options = cardList.map(({key, name}) =><Option key={key} value={name}>{name}</Option>);
+    var options = cardList.map(({key, name}) =><Option key={key} value={key}>{name}</Option>);
     //console.log(options)
     // console.log(data);
     // console.log('render data source: '+JSON.stringify(data));
