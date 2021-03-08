@@ -322,7 +322,11 @@ class PaymentTable extends React.Component {
         }, 1000);
       } else {
         message.error('결제 내역을 추가하는 도중 오류가 발생하였습니다.');
+        this.setState({ loading: false, selectedRowKeys: [], requestInProgress: false})
       }
+    }).catch(error => {
+      console.log(error);
+      message.error('결제 내역을 추가하는 도중 오류가 발생하였습니다.');
       this.setState({ loading: false, selectedRowKeys: [], requestInProgress: false})
     });
   }
@@ -471,7 +475,7 @@ class PaymentTable extends React.Component {
   }
 
   render() {
-    const { loading, isDelPayDiagVisible, cardList, selectedRowKeys, card_num, isAddPayDiagVisible } = this.state;
+    const { loading, isDelPayDiagVisible, cardList, selectedRowKeys, card_num, isAddPayDiagVisible, requestInProgress } = this.state;
     const rowSelection = {
       selectedRowKeys,
       onChange: this.onSelectChange,
@@ -518,7 +522,7 @@ class PaymentTable extends React.Component {
               취소
             </Button>,
             <Button form="addPayForm" type="primary"
-              key="submit" htmlType="submit">
+              key="submit" htmlType="submit" loading={requestInProgress}>
               추가
             </Button>
           ]}
