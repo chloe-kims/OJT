@@ -168,6 +168,10 @@ const RegistrationForm = () => {
     axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/InsertUserAccount?action=SO', data).then(response => {
       message.success('회원가입이 완료되었습니다.')
       setReqInProgress(false)
+      setTimeout(() => {
+        window.location.href = '../';
+      }, 1500);
+      
     }).catch(error => {
       message.error('회원가입에 실패하였습니다. 잠시 후 다시 시도해주세요.')
       setReqInProgress(false)
