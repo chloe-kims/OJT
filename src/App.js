@@ -15,7 +15,7 @@ import UserInfoPw from './Pages/UserInfoPw';
 import UserInfoChange from './Pages/UserInfoChange';
 import Deny from './Pages/Deny';
 import 'antd/dist/antd.css';
-import { Layout } from 'antd';
+import { Layout, message } from 'antd';
 const { Footer } = Layout;
 
 // function onLogin ({ id, password }) {
@@ -57,12 +57,17 @@ function App() {
   //   })
   //   setUser(userinfo);
   // }
+  const [loginInProgress, setLoginInProgress] = useState(false);
   const login = ({ id, password }) => {
+    setLoginInProgress(true);
     onLogin({ id, password })
-    .then(response => setUser(response))
+          .then(response => {setUser(response)
+                             setLoginInProgress(false)
+                             message.success('\'' + id + '\'로 로그인 되었습니다.')})
     .catch((e) => { 
       console.log(e)
-      alert('로그인에 실패하였습니다.')
+      message.error('로그인에 실패하였습니다.')
+      setLoginInProgress(false)
     });
     // setUser(onLogin({ id, password }));
   }
@@ -78,7 +83,7 @@ function App() {
           <Route
             path='/login'
             render={props => (
-              <Login authenticated={authenticated} login={login} {...props} />
+              <Login authenticated={authenticated} login={login} loginInProgress={loginInProgress} {...props} />
             )}
           />
           <Route path='/sign' component={ Sign } />
