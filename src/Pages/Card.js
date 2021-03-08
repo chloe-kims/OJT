@@ -186,13 +186,18 @@ class CardTable extends React.Component {
 
   }
 
-  cardNumSetDash = (input) => {
+  cardNumAppendDash = (input) => {
     let returnVal = input;
     if (input.length <= 19 && input.match(/\d{5}$/)) {
       const valLen = returnVal.length;
       returnVal = input.slice(0, valLen - 1) + '-' + input.substr(valLen - 1);
     }
     return returnVal;
+  }
+
+  cardNumSetDash = (input) => {
+    return input.slice(0,4) + '-' + input.slice(4,8)
+      + '-' + input.slice(8,12) + '-' + input.slice(12,16);
   }
 
   cardNumRemoveDash = (input) => {
@@ -203,7 +208,7 @@ class CardTable extends React.Component {
   fieldInfoMap = {
     cardNum: ['formInputCardNum',
               /^(\d(\d(\d(\d(-(\d(\d(\d(\d(-(\d(\d(\d(\d(-(\d(\d(\d(\d)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?)?$/,
-              this.cardNumSetDash],
+              this.cardNumAppendDash],
     bankAccount: ['formInputBankAcc', /^\d*$/],
   }
 
