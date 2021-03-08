@@ -8,7 +8,7 @@ import { Link } from 'react-router-dom';
 const HomeForm = () => {
 
   return (
-    <Form style={{margin: 'auto', maxWidth: '10%', borderBottom: '1px solid lightgray', paddingBottom: '10px'}}
+    <Form style={{margin: 'auto', maxWidth: '10%', paddingBottom: '10px', paddingTop: 30}}
       name="normal_home"
       className="login-form"
     >
