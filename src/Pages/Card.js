@@ -186,18 +186,22 @@ class CardTable extends React.Component {
 
   }
 
+
+  cardNumSetDash = (input) => {
+    return (input.slice(0,4) + '-' + input.slice(4,8)
+            + '-' + input.slice(8,12) + '-' + input.slice(12,16)).replace(/-+$/, '');
+  }
+  
   cardNumAppendDash = (input) => {
     let returnVal = input;
-    if (input.length <= 19 && input.match(/\d{5}$/)) {
+    if (input.match(/^\d+$/)) {
+      returnVal = this.cardNumSetDash(input);
+    }
+    if (returnVal.length <= 19 && returnVal.match(/\d{5}$/)) {
       const valLen = returnVal.length;
       returnVal = input.slice(0, valLen - 1) + '-' + input.substr(valLen - 1);
     }
     return returnVal;
-  }
-
-  cardNumSetDash = (input) => {
-    return input.slice(0,4) + '-' + input.slice(4,8)
-      + '-' + input.slice(8,12) + '-' + input.slice(12,16);
   }
 
   cardNumRemoveDash = (input) => {
