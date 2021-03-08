@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import crypto from 'crypto';
+
 import { Link } from 'react-router-dom';
 import '../App.css';
 import 'antd/dist/antd.css';
@@ -18,8 +20,6 @@ const { SubMenu } = Menu;
 const FormLayoutDemo = () => {
   const [form] = Form.useForm();
   const [formLayout, setFormLayout] = useState('horizontal');
-  const [oldpw, setOldpw] = useState('admin');
-  const [newpw, setNewpw] = useState('admin123');
   const [reqInProgress, setReqInProgress] = useState(false);
 
   const onFormLayoutChange = ({ layout }) => {
@@ -48,9 +48,13 @@ const FormLayoutDemo = () => {
       : null;
 
 
-  const updatePw = () => {
+  const updatePw = (values) => {
     setReqInProgress(true);
     const id = window.sessionStorage.getItem('id');
+    const oldpw = crypto.createHash('sha512').update(values.oldpw).digest('base64');
+    const newpw = crypto.createHash('sha512').update(values.newpw).digest('base64');
+    let p;
+    let auth = false;
     const old_data = {
       "header": {
           "DATA_TYPE": "3"
@@ -61,29 +65,30 @@ const FormLayoutDemo = () => {
     }
 
     axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/ReadUserAccount?action=SO', old_data).then(response => {
-      console.log('old post data: '+JSON.stringify(old_data))
+      // console.log('old post data: '+JSON.stringify(old_data))
       // console.log(response)
-      const id = window.sessionStorage.getItem('id');
-      const p = response.data.dto.USER_PW;
-      const n = response.data.dto.COMP_NM;
-      const new_data = {
-        "header": {
-            "DATA_TYPE": "3"
-        },
-        "dto": {
-            "USER_ID": id,
-            "USER_PW": newpw,
-            "COMP_NM": n        // TODO:: 비밀번호 변경용 SO 하나 더 만들기, 나머지가 null로 들어가니까 다 비워지게되어버림,,
+      p = response.data.dto.USER_PW;
+      if (oldpw != p){
+        message.error('잘못된 비밀번호입니다.')
+        setReqInProgress(false)
+      } else {
+        const new_data = {
+          "header": {
+              "DATA_TYPE": "3"
+          },
+          "dto": {
+              "USER_ID": id,
+              "USER_PW": newpw,
+          }
         }
-      }
-      console.log(p, oldpw, newpw)
-      if(oldpw === p){
-        console.log('auth true!')
-        axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/UpdateUserAccount?action=SO', new_data).then(response => {
-          console.log('new post data: '+JSON.stringify(new_data))
-          console.log('update')
-          message.success('비밀번호가 변경되었습니다.')
-          setReqInProgress(false)
+          // console.log('auth true!')
+        axios.post('http://192.1.4.246:14000/AB3-5/OJTWEB/UpdatePWUserAccount?action=SO', new_data).then(response => {
+          // console.log('new post data: '+JSON.stringify(new_data))
+          // console.log('update')
+          setTimeout(() => {
+            message.success('비밀번호가 변경되었습니다.')
+            setReqInProgress(false)
+          }, 1000);
         }).catch(error => {
           message.error('비밀번호 변경에 실패하였습니다.')
           setReqInProgress(false)
@@ -91,7 +96,7 @@ const FormLayoutDemo = () => {
       }
       // alert('비밀번호를 변경하였습니다.')
     }).catch(error => {
-      message.error('잘못된 비밀번호입니다.')
+      message.error('서버와의 통신에 실패하였습니다.')
       setReqInProgress(false)
     });
   }
@@ -106,16 +111,33 @@ const FormLayoutDemo = () => {
           layout: formLayout,
         }}
         onValuesChange={onFormLayoutChange}
+        onFinish={updatePw}
       >
-        <Form.Item label="현재 비밀번호">
+        <Form.Item name="oldpw" label="현재 비밀번호"
+          rules={[
+            {
+              required: true,
+              message: '현재 비밀번호를 입력해주세요.',
+            },
+          ]}
+          >
           <Input.Password disabled={reqInProgress}/>
         </Form.Item>
-        <Form.Item label="새로운 비밀번호">
+        <Form.Item name="newpw" label="새로운 비밀번호"
+            rules={[
+              {
+                required: true,
+                message: '변경할 비밀번호를 입력해주세요.',
+              },
+            ]}
+            >
           <Input.Password disabled={reqInProgress}/>
         </Form.Item>
+
         <Form.Item {...buttonItemLayout}>
-          <Button type="primary" onClick={updatePw} loading={reqInProgress}>변경</Button>
+          <Button type="primary" htmlType="submit" loading={reqInProgress}>변경</Button>
         </Form.Item>
+
       </Form>
     </>
   );
@@ -181,4 +203,3 @@ function UserInfoPw() {
 }
 
 export default UserInfoPw;
-
