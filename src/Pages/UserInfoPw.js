@@ -103,7 +103,7 @@ const FormLayoutDemo = () => {
 
   return (
     <>
-      <Form style = {{margin: 'auto', maxWidth: '50vw', paddingRight: '30px'}}
+      <Form style = {{margin: 'auto', maxWidth: '40vw', paddingRight: '30px'}}
         {...formItemLayout}
         layout={formLayout}
         form={form}
