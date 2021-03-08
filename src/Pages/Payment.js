@@ -195,7 +195,7 @@ class PaymentTable extends React.Component {
           memo: temp[i].PAY_MEMO
         });
       }
-      // console.log(data_source)
+      //console.log(data_source)
       this.setState({ payment_data: data_source, loading: false });
     }).catch(error => {
       this.setState({ payment_data: [], loading: false });
@@ -269,7 +269,7 @@ class PaymentTable extends React.Component {
         })
       }
       // console.log(card_data)
-      this.setState({ cardList: card_data, loading: true})
+      this.setState({ cardList: card_data})
     }).catch(error => {
       this.setState({ cardList: []});
     });
